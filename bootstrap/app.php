@@ -15,10 +15,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    });
+    })->create();
 
 if ($storagePath = getenv('APP_STORAGE')) {
     $app->useStoragePath($storagePath);
 }
 
-return $app->create();
+return $app;
