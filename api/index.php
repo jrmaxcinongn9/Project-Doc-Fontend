@@ -1,5 +1,9 @@
 <?php
 
+// Force HTTPS in serverless environment so all asset() and @vite generate https:// URLs
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['SERVER_PORT'] = 443;
+
 // Create tmp storage directories for serverless environment
 $storagePath = '/tmp/storage';
 foreach ([
