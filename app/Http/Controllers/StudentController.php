@@ -8,7 +8,12 @@ use Carbon\Carbon;
 
 class StudentController extends Controller
 {
-    private $apiUrl = 'http://localhost:3000';
+    private $apiUrl;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('services.api_url') ?? env('API_URL', 'https://project-doc-backend.onrender.com');
+    }
 
     public function dashboard()
     {
