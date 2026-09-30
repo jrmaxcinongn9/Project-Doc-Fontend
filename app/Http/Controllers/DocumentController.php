@@ -273,10 +273,10 @@ public function downloadFile($id)
     // ตรวจสอบ $id (เผื่อกรณี MongoDB)
     $cleanId = is_array($id) ? ($id['$oid'] ?? $id[0]) : $id;
 
-    try {
-        $response = Http::withToken($token)
-            ->timeout(60)
-            ->get("http://localhost:3000/files/download/{$cleanId}");
+  try {
+    $response = Http::withToken($token)
+        ->timeout(60)
+        ->get($this->apiUrl . "/files/download/{$cleanId}");
 
         if ($response->successful()) {
             return response($response->body(), 200, [
