@@ -7,7 +7,7 @@
 
         <x-admin-sidebar />
 
-        <main class="flex-1 p-6 md:p-10"> {{-- เพิ่ม Responsive Padding --}}
+        <main class="flex-1 p-6 md:p-10 pt-[calc(3.5rem+1.5rem)] lg:pt-6"> {{-- เพิ่ม Responsive Padding --}}
 
             <x-admintopbar-profile title="โปรไฟล์ผู้ดูแลระบบ" />
 

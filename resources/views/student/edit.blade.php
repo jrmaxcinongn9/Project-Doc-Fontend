@@ -70,7 +70,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 pt-[calc(3.5rem+2.5rem)] lg:pt-10">
 
         <!-- Topbar -->
         <div class="flex justify-between items-center mb-10">

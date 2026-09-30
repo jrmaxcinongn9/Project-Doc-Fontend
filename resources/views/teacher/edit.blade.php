@@ -6,7 +6,7 @@
     <x-teacher-sidebar />
 
     <!-- MAIN -->
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 pt-[calc(3.5rem+2.5rem)] lg:pt-10">
 
         <!-- Topbar -->
         <x-topbar-profile title="แก้ไขงาน" />

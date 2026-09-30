@@ -5,7 +5,7 @@
     <x-student-sidebar />
 
     <!-- Main -->
-    <main class="flex-1 p-6 md:p-10">
+    <main class="flex-1 p-6 md:p-10 pt-[calc(3.5rem+1.5rem)] lg:pt-6">
 
         <!-- Topbar -->
         <x-student-topbar-profile title="เอกสารฝึกงาน" />

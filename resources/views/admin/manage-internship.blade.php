@@ -3,7 +3,7 @@
 <div class="min-h-screen flex bg-[#f5f7fa]">
     <x-admin-sidebar />
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 pt-[calc(3.5rem+2.5rem)] lg:pt-10">
         <x-admintopbar-profile title="Assignment" />
 
         <div class="flex justify-between items-center mb-6">

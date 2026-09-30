@@ -6,7 +6,7 @@
     <x-student-sidebar />
 
     <!-- MAIN -->
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 pt-[calc(3.5rem+2.5rem)] lg:pt-10">
 
         <!-- Topbar -->
         <x-student-topbar-profile title="โปรไฟล์ของฉัน" />

@@ -2,7 +2,7 @@
     <div class="min-h-screen flex bg-slate-50">
         <x-admin-sidebar />
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto pt-14 lg:pt-0">
             <div class="p-6 sm:p-10 max-w-7xl mx-auto space-y-6">
                 
                 {{-- Topbar --}}

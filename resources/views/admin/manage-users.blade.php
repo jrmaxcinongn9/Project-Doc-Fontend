@@ -3,7 +3,7 @@
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto pt-14 lg:pt-0">
         <div class="p-8 md:p-10 max-w-7xl mx-auto w-full">
             
             <div class="flex justify-between items-end mb-8 pb-6 border-b border-slate-200/70">

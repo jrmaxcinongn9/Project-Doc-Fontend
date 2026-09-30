@@ -13,7 +13,7 @@
         {{-- MAIN CONTENT --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
             
-            <main class="flex-1 overflow-y-auto p-6">
+            <main class="flex-1 overflow-y-auto p-6 pt-[calc(3.5rem+1.5rem)] lg:pt-6">
                 <div class="max-w-7xl mx-auto">
 
                     {{-- HEADER --}}

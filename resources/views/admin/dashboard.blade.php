@@ -2,7 +2,7 @@
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
-    <main class="flex-1 p-8 md:p-10">
+    <main class="flex-1 p-8 md:p-10 pt-[calc(3.5rem+2rem)] lg:pt-10">
         <div class="max-w-7xl mx-auto w-full">
             
             <div class="flex justify-between items-end mb-10 pb-6 border-b border-slate-200/70">

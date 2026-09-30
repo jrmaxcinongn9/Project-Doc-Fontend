@@ -1,6 +1,6 @@
 @props(['title' => null])
 
-<div class="flex justify-between items-center mb-8 w-full">
+<div class="hidden lg:flex justify-between items-center mb-8 w-full">
 
     <!-- Title -->
     <h1 class="text-2xl font-semibold text-gray-700">
@@ -19,7 +19,7 @@
             </p>
         </div>
 
-        <svg xmlns="http://www.w3.org/2000/svg" 
+        <svg xmlns="http://www.w3.org/2000/svg"
              class="w-10 h-10 p-2 bg-gray-200 rounded-full text-gray-600"
              fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"

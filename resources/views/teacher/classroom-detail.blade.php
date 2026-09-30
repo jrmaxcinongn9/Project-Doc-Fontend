@@ -4,7 +4,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-8 md:p-10 lg:p-12">
+    <main class="flex-1 p-8 md:p-10 lg:p-12 pt-[calc(3.5rem+2rem)] lg:pt-12">
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>

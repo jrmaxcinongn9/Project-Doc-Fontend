@@ -21,10 +21,10 @@
 
     <x-student-sidebar />
 
-    <main class="flex-1 relative pb-10">
+    <main class="flex-1 relative pb-10 pt-14 lg:pt-0">
         
         {{-- 🌟 ส่วน Topbar / Header 🌟 --}}
-        <div class="flex justify-between items-start px-6 md:px-10 py-6">
+        <div class="hidden lg:flex justify-between items-start px-6 md:px-10 py-6">
             <div>
                 @if($classroom)
                     <h1 class="text-[22px] font-bold text-[#3f4b5b]">ห้องเรียน: {{ $classroom->name }} ({{ $classroom->major }})</h1>
@@ -44,6 +44,15 @@
                     </svg>
                 </div>
             </a>
+        </div>
+
+        {{-- Mobile page title --}}
+        <div class="lg:hidden px-4 pt-4 pb-2">
+            @if($classroom)
+                <h1 class="text-lg font-bold text-[#3f4b5b]">ห้องเรียน: {{ $classroom->name }}</h1>
+            @else
+                <h1 class="text-lg font-bold text-[#3f4b5b]">ยังไม่พบห้องเรียน</h1>
+            @endif
         </div>
 
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

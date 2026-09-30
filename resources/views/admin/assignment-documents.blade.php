@@ -4,7 +4,7 @@
 
     <x-admin-sidebar />
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 pt-[calc(3.5rem+2.5rem)] lg:pt-10">
 
         <x-topbar-profile title="📄 {{ $assignmentName }}" />
 
