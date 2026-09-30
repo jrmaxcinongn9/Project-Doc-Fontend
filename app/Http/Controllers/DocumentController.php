@@ -10,10 +10,10 @@ class DocumentController extends Controller
 {
     private $apiUrl;
 
-    public function __construct()
-    {
-        $this->apiUrl = config('services.api_url') ?? 'http://localhost:3000';
-    }
+public function __construct()
+{
+    $this->apiUrl = rtrim(config('services.api_url'), '/');
+}
 
     public function index()
     {
