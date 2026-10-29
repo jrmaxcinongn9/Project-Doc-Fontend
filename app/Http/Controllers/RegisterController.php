@@ -9,11 +9,14 @@ class RegisterController extends Controller
 {
     public function register(Request $request)
     {
+        // อีเมลไม่สนใจตัวพิมพ์ใหญ่-เล็ก แต่ ends_with สนใจ จึงแปลงเป็นตัวพิมพ์เล็กก่อนตรวจ
+        $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
+
         // 1. Validation: เพิ่มการตรวจสอบ student_id และปรับแต่งข้อความแจ้งเตือน
         $request->validate([
             'name'         => 'required|string|min:4|max:255', 
             'student_id'   => 'required|numeric|digits:11',   // เพิ่ม: ต้องเป็นตัวเลข 11 หลัก
-            'email'        => 'required|email',              
+            'email'        => 'required|email|ends_with:@mail.kmutt.ac.th',
             'password'     => 'required|string|min:6',        
             'academicYear' => 'required|digits:4',           
             'major'        => 'required|string',             
@@ -23,6 +26,7 @@ class RegisterController extends Controller
             'student_id.required'   => 'กรุณากรอกรหัสนักศึกษา',
             'student_id.numeric'    => 'รหัสนักศึกษาต้องเป็นตัวเลขเท่านั้น',
             'student_id.digits'     => 'รหัสนักศึกษาต้องมีความยาว 11 หลัก',
+            'email.ends_with'       => 'ต้องสมัครด้วยอีเมล @mail.kmutt.ac.th เท่านั้น',
             'academicYear.required' => 'กรุณาเลือกปีการศึกษา',
             'major.required'        => 'กรุณาเลือกสาขาวิชา',
             'password.min'          => 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
