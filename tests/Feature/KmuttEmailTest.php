@@ -13,7 +13,8 @@ class KmuttEmailTest extends TestCase
             'name'         => 'Somchai Jai',
             'student_id'   => '65130500001',
             'email'        => $email,
-            'password'     => 'secret1',
+            'password'              => 'secret1',
+            'password_confirmation' => 'secret1',
             'academicYear' => '2569',
             'major'        => 'CPE',
         ];
@@ -46,6 +47,30 @@ class KmuttEmailTest extends TestCase
 
         $this->post('/register', $this->payload($email))
             ->assertSessionHasErrors('email');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_mismatched_confirmation_is_rejected(): void
+    {
+        Http::fake(['*' => Http::response(['message' => 'ok'], 201)]);
+
+        $payload = $this->payload('65130500001@mail.kmutt.ac.th');
+        $payload['password_confirmation'] = 'something else';
+
+        $this->post('/register', $payload)->assertSessionHasErrors('password');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_missing_confirmation_is_rejected(): void
+    {
+        Http::fake(['*' => Http::response(['message' => 'ok'], 201)]);
+
+        $payload = $this->payload('65130500001@mail.kmutt.ac.th');
+        unset($payload['password_confirmation']);
+
+        $this->post('/register', $payload)->assertSessionHasErrors('password');
 
         Http::assertNothingSent();
     }

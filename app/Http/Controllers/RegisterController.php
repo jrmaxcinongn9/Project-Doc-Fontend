@@ -17,7 +17,7 @@ class RegisterController extends Controller
             'name'         => 'required|string|min:4|max:255', 
             'student_id'   => 'required|numeric|digits:11',   // เพิ่ม: ต้องเป็นตัวเลข 11 หลัก
             'email'        => 'required|email|ends_with:@mail.kmutt.ac.th',
-            'password'     => 'required|string|min:6',        
+            'password'     => 'required|string|min:6|confirmed',
             'academicYear' => 'required|digits:4',           
             'major'        => 'required|string',             
         ], [
@@ -30,6 +30,7 @@ class RegisterController extends Controller
             'academicYear.required' => 'กรุณาเลือกปีการศึกษา',
             'major.required'        => 'กรุณาเลือกสาขาวิชา',
             'password.min'          => 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+            'password.confirmed'    => 'ยืนยันรหัสผ่านไม่ตรงกับรหัสผ่าน',
         ]);
 
         /** * 🔥 API URL จาก Config
