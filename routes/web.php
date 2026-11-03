@@ -11,6 +11,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\VerifyEmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,7 @@ Route::post('/login',  [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', fn() => view('auth.register'));
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::get('/verify-email', [VerifyEmailController::class, 'verify'])->name('verify.email');
 Route::get('/forgot-password', fn() => view('auth.forgot-password'));
 Route::post('/forgot-password/send',       [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);

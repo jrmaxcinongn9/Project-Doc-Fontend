@@ -15,7 +15,7 @@ class KmuttEmailTest extends TestCase
             'email'        => $email,
             'password'              => 'secret1',
             'password_confirmation' => 'secret1',
-            'academicYear' => '2569',
+            'category'     => 'SOFTWARE',
             'major'        => 'CPE',
         ];
     }

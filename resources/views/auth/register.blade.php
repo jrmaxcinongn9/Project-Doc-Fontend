@@ -89,16 +89,32 @@
                         <p class="text-xs text-white/40 mt-2 ml-1">สมัครได้เฉพาะอีเมล @mail.kmutt.ac.th</p>
                     </div>
 
+                    {{-- ปีการศึกษาไม่ใช่ข้อมูลตอนสมัครแล้ว รหัสนักศึกษาบอกปีเข้าอยู่แล้ว
+                         และปีการศึกษาเป็นสิ่งที่ผู้ดูแลระบบกำหนดให้กับห้องเรียน --}}
+
                     <div>
-                        <label class="text-xs text-white/60 mb-2 ml-1 block uppercase tracking-widest">Academic Year</label>
-                        <select name="academicYear" required
+                        <label class="text-xs text-white/60 mb-2 ml-1 block uppercase tracking-widest">Workplace Category</label>
+                        <select name="category" required
                             class="w-full px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-[#F58220] transition-all outline-none appearance-none cursor-pointer">
-                            <option value="" disabled selected class="bg-[#1e293b]">Select Year</option>
-                            @php $year = 2569; @endphp
-                            @for ($i = 0; $i < 6; $i++)
-                                <option value="{{ $year - $i }}" class="bg-[#1e293b]">{{ $year - $i }}</option>
-                            @endfor
+                            <option value="" disabled selected class="bg-[#1e293b]">Select Category</option>
+                            @php
+                                $categories = [
+                                    'SOFTWARE' => 'ซอฟต์แวร์ / พัฒนาโปรแกรม',
+                                    'NETWORK'  => 'เครือข่ายและระบบ',
+                                    'DATA'     => 'ข้อมูลและวิเคราะห์',
+                                    'HARDWARE' => 'ฮาร์ดแวร์และอิเล็กทรอนิกส์',
+                                    'DESIGN'   => 'ออกแบบ',
+                                    'BUSINESS' => 'ธุรกิจและบริการ',
+                                    'OTHER'    => 'อื่น ๆ',
+                                ];
+                            @endphp
+                            @foreach ($categories as $value => $label)
+                                <option value="{{ $value }}"
+                                    @selected(old('category') === $value)
+                                    class="bg-[#1e293b]">{{ $label }}</option>
+                            @endforeach
                         </select>
+                        <p class="text-xs text-white/40 mt-2 ml-1">เลือกตามงานที่ไปฝึก ระบบใช้จับคู่กับครูนิเทศ</p>
                     </div>
 
                     <div>
