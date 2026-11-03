@@ -83,7 +83,10 @@
                     <div>
                         <label class="text-xs text-white/60 mb-2 ml-1 block uppercase tracking-widest">KMUTT Email</label>
                         <input type="email" name="email" value="{{ old('email') }}" required
+                            placeholder="yourname@mail.kmutt.ac.th"
+                            title="ต้องเป็นอีเมล @mail.kmutt.ac.th เท่านั้น"
                             class="w-full px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:ring-2 focus:ring-[#F58220] transition-all outline-none">
+                        <p class="text-xs text-white/40 mt-2 ml-1">สมัครได้เฉพาะอีเมล @mail.kmutt.ac.th</p>
                     </div>
 
                     <div>
