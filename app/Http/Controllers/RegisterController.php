@@ -18,7 +18,7 @@ class RegisterController extends Controller
             'student_id'   => 'required|numeric|digits:11',   // เพิ่ม: ต้องเป็นตัวเลข 11 หลัก
             'email'        => 'required|email|ends_with:@mail.kmutt.ac.th',
             'password'     => 'required|string|min:6|confirmed',
-            'academicYear' => 'required|digits:4',           
+            'category'     => 'required|string|in:SOFTWARE,NETWORK,DATA,HARDWARE,DESIGN,BUSINESS,OTHER',
             'major'        => 'required|string',             
         ], [
             // ข้อความแจ้งเตือนภาษาไทย
@@ -27,7 +27,8 @@ class RegisterController extends Controller
             'student_id.numeric'    => 'รหัสนักศึกษาต้องเป็นตัวเลขเท่านั้น',
             'student_id.digits'     => 'รหัสนักศึกษาต้องมีความยาว 11 หลัก',
             'email.ends_with'       => 'ต้องสมัครด้วยอีเมล @mail.kmutt.ac.th เท่านั้น',
-            'academicYear.required' => 'กรุณาเลือกปีการศึกษา',
+            'category.required'     => 'กรุณาเลือกสาขาของสถานประกอบการที่ไปฝึก',
+            'category.in'           => 'สาขาที่เลือกไม่ถูกต้อง',
             'major.required'        => 'กรุณาเลือกสาขาวิชา',
             'password.min'          => 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
             'password.confirmed'    => 'ยืนยันรหัสผ่านไม่ตรงกับรหัสผ่าน',
@@ -46,7 +47,7 @@ class RegisterController extends Controller
                 'student_id'   => $request->student_id, // เพิ่ม: ส่งรหัสนักศึกษาไปที่ API
                 'email'        => $request->email,
                 'password'     => $request->password,
-                'academicYear' => (string) $request->academicYear, 
+                'category'     => $request->category,
                 'major'        => $request->major,
                 'role'         => 'USER' 
             ]);
@@ -55,7 +56,10 @@ class RegisterController extends Controller
              * ✔ กรณีสมัครสำเร็จ
              */
             if ($response->successful()) {
-                return redirect('/login/student')->with('success', 'สมัครสมาชิกสำเร็จแล้ว! กรุณาเข้าสู่ระบบ');
+                return redirect('/login/student')->with(
+                    'success',
+                    'สมัครสำเร็จแล้ว กรุณากดลิงก์ยืนยันในอีเมลของคุณ จากนั้นรอผู้ดูแลระบบอนุมัติก่อนเข้าใช้งาน'
+                );
             }
 
             /**
