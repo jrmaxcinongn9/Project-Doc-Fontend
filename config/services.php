@@ -24,6 +24,12 @@ return [
     ],
 
     // ⭐ เพิ่มตรงนี้
-    'api_url' => env('API_URL'),
+    // คอนโทรลเลอร์ 11 ตัวต่อ API ผ่านค่านี้ ถ้าไม่มีค่า ทุกตัวจะยิงไปที่
+    // path ว่างแล้วล้มด้วย ConnectionException ซึ่งอ่านเหมือนระบบล่ม
+    // จึงใส่ที่อยู่ production ไว้เป็นค่าปริยาย ตั้ง API_URL เพื่อทับได้
+    'api_url' => rtrim(
+        env('API_URL') ?: 'https://project-doc-backend.onrender.com',
+        '/',
+    ),
 
 ];

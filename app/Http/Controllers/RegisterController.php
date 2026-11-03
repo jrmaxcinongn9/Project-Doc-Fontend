@@ -42,15 +42,21 @@ class RegisterController extends Controller
          * 🚀 ส่งข้อมูลไป API
          */
         try {
-            $response = Http::withoutVerifying()->post($apiUrl, [
-                'name'         => $request->name,
-                'student_id'   => $request->student_id, // เพิ่ม: ส่งรหัสนักศึกษาไปที่ API
-                'email'        => $request->email,
-                'password'     => $request->password,
-                'category'     => $request->category,
-                'major'        => $request->major,
-                'role'         => 'USER' 
-            ]);
+            // Render free tier พักเครื่องเมื่อไม่มีคนใช้ คำขอแรกจึงต้องรอ
+            // เครื่องตื่นก่อน ซึ่งกินเวลาได้ถึงนาทีกว่า ค่า timeout ปริยายของ
+            // Laravel คือ 30 วินาที จึงตัดทิ้งทั้งที่ฝั่ง API กำลังจะพร้อม
+            $response = Http::withoutVerifying()
+                ->connectTimeout(30)
+                ->timeout(120)
+                ->post($apiUrl, [
+                    'name'       => $request->name,
+                    'student_id' => $request->student_id, // เพิ่ม: ส่งรหัสนักศึกษาไปที่ API
+                    'email'      => $request->email,
+                    'password'   => $request->password,
+                    'category'   => $request->category,
+                    'major'      => $request->major,
+                    'role'       => 'USER',
+                ]);
 
             /**
              * ✔ กรณีสมัครสำเร็จ
@@ -72,10 +78,19 @@ class RegisterController extends Controller
                 ->withErrors(['register' => $errorMessage])
                 ->withInput();
 
-        } catch (\Exception $e) {
-            // กรณี Server API ล่ม
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // ต่อไม่ติดหรือรอจนหมดเวลา ส่วนใหญ่คือเซิร์ฟเวอร์กำลังตื่นจากการพัก
+            // บอกให้ผู้ใช้กดใหม่ ดีกว่าบอกว่าระบบล่มซึ่งไม่ตรงกับความจริง
             return back()
-                ->withErrors(['register' => 'ระบบขัดข้อง: ไม่สามารถเชื่อมต่อฐานข้อมูลได้ในขณะนี้'])
+                ->withErrors([
+                    'register' => 'เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณารอสักครู่แล้วกดสมัครอีกครั้ง',
+                ])
+                ->withInput();
+
+        } catch (\Exception $e) {
+            // กรณีอื่นที่ไม่คาดคิด
+            return back()
+                ->withErrors(['register' => 'ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง'])
                 ->withInput();
         }
     }
