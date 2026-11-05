@@ -12,6 +12,24 @@
         <ul class="space-y-1.5">
             
             <li>
+                <a href="/teacher/dashboard"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                          {{ request()->is('teacher/dashboard*')
+                             ? 'bg-orange-50 text-[#F26522] font-semibold'
+                             : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium' }}">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-5 h-5 transition-colors {{ request()->is('teacher/dashboard*') ? 'text-[#F26522]' : 'text-slate-400' }}"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                              d="M9 19v-6a1 1 0 00-1-1H5a1 1 0 00-1 1v6a1 1 0 001 1h3a1 1 0 001-1zm0 0V9a1 1 0 011-1h4a1 1 0 011 1v10m0 0h3a1 1 0 001-1V5a1 1 0 00-1-1h-3a1 1 0 00-1 1v14z" />
+                    </svg>
+
+                    <span class="text-[14px]">ภาพรวมงาน</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="/teacher/classroom"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                           {{ request()->is('teacher/classroom*') 
