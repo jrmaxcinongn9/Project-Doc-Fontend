@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminApprovalController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
+use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VerifyEmailController;
@@ -105,7 +106,8 @@ Route::group(['middleware' => function ($request, $next) {
 
     // --- (Route อื่นๆ ของคุณคงไว้เหมือนเดิม) ---
     Route::get('/teacher/review', fn() => view('teacher.review-documents'));
-    Route::get('/teacher/students', fn() => view('teacher.students'));
+    // เดิมหน้านี้เป็นข้อมูลปลอมที่เขียนไว้ใน view ครูทุกคนเห็นชุดเดียวกัน
+    Route::get('/teacher/students', [TeacherStudentController::class, 'index'])->name('teacher.students');
     Route::get('/teacher/detail', fn() => view('teacher.student-detail'));
     Route::get('/teacher/work', fn() => view('teacher.work-files'));
     // ดึงหน้าดูรายละเอียดงาน (Assignment View)
