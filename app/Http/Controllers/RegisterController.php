@@ -62,10 +62,21 @@ class RegisterController extends Controller
              * ✔ กรณีสมัครสำเร็จ
              */
             if ($response->successful()) {
-                return redirect('/login/student')->with(
+                // API คืนลิงก์ยืนยันมาด้วยเฉพาะตอนที่ตั้ง EXPOSE_VERIFY_LINK ไว้
+                // ซึ่งเปิดไว้ช่วงที่ระบบส่งเมลยังใช้งานไม่ได้
+                // เดิมค่านี้ถูกทิ้งไปทั้งก้อน ผู้สมัครจึงไม่มีทางยืนยันอีเมลเลย
+                $verifyLink = $response->json('verifyLink');
+
+                $redirect = redirect('/login/student')->with(
                     'success',
                     'สมัครสำเร็จแล้ว กรุณากดลิงก์ยืนยันในอีเมลของคุณ จากนั้นรอผู้ดูแลระบบอนุมัติก่อนเข้าใช้งาน'
                 );
+
+                if ($verifyLink) {
+                    $redirect->with('verify_link', $verifyLink);
+                }
+
+                return $redirect;
             }
 
             /**

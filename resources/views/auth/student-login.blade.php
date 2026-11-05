@@ -79,6 +79,30 @@
                 </span>
             </h2>
 
+            {{-- สมัครเสร็จแล้วเด้งมาหน้านี้ แต่เดิมหน้านี้อ่านแต่ errors
+                 ข้อความว่าสมัครสำเร็จจึงหายไปเงียบ ๆ ทุกครั้ง --}}
+            @if (session('success'))
+                <div class="mb-4 p-3 bg-emerald-500/10 border border-emerald-400/30 text-emerald-200 rounded-xl text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- ลิงก์ยืนยันจะมีก็เฉพาะตอนที่ API เปิด EXPOSE_VERIFY_LINK ไว้
+                 ใช้ตอนที่ระบบส่งเมลยังใช้งานไม่ได้ ไม่ให้ผู้สมัครค้างอยู่กลางทาง
+                 พอเมลใช้ได้แล้วปิด env ปุ่มนี้ก็หายไปเอง ไม่ต้องแก้โค้ดซ้ำ --}}
+            @if (session('verify_link'))
+                <div class="mb-4 p-4 bg-amber-500/10 border border-amber-400/30 rounded-xl text-sm">
+                    <p class="text-amber-200 mb-3">
+                        ระบบส่งอีเมลยังใช้งานไม่ได้ กดปุ่มนี้เพื่อยืนยันอีเมลของคุณได้ทันที
+                    </p>
+                    <a href="{{ session('verify_link') }}"
+                       class="inline-block px-5 py-2.5 rounded-xl bg-[#F58220] hover:bg-[#d8561b]
+                              text-white font-semibold transition-colors">
+                        ยืนยันอีเมลของฉัน
+                    </a>
+                </div>
+            @endif
+
             <!-- ALERT -->
             @if ($errors->any())
                 <div class="mb-4 p-3 bg-red-500/10 border border-red-400/30 text-red-300 rounded-xl text-sm">
