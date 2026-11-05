@@ -142,6 +142,93 @@
             </div>
         </div>
 
+        {{-- ✍️ ให้คะแนนและเขียนความเห็น
+             อาจารย์บอกว่าครูต้องให้ feedback กลับได้ ไม่ใช่รับงานเฉย ๆ
+             และกรอกคะแนนเต็มตอนสร้างงาน แล้วให้คะแนนทีหลัง --}}
+        <div class="bg-white p-6 rounded-xl shadow mt-8">
+
+            <div class="flex items-end justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">ให้คะแนนและความเห็น</h3>
+                    <p class="text-sm text-slate-500 mt-0.5">
+                        @if($maxScore)
+                            คะแนนเต็มของงานชิ้นนี้ {{ $maxScore }} คะแนน
+                        @else
+                            งานชิ้นนี้ยังไม่ได้ตั้งคะแนนเต็ม ให้ความเห็นได้ แต่ยังใส่คะแนนไม่ได้
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            @if(session('success'))
+            <div class="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-sm">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if($errors->has('grade') || $errors->has('score'))
+            <div class="mb-5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+                {{ $errors->first('grade') ?: $errors->first('score') }}
+            </div>
+            @endif
+
+            <div class="space-y-3">
+                @forelse($gradeRows ?? [] as $row)
+                <form method="POST"
+                      action="/teacher/assignment/{{ $assignmentId }}/students/{{ $row->student_id }}/grade"
+                      class="border border-slate-150 rounded-2xl p-4 hover:bg-slate-50/50 transition-colors">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="flex flex-wrap items-start gap-4">
+
+                        <div class="min-w-[200px] flex-1">
+                            <div class="font-semibold text-slate-800">{{ $row->name }}</div>
+                            <div class="text-xs text-slate-500">{{ $row->email }}</div>
+                            @if($row->submitted)
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-semibold">ส่งแล้ว</span>
+                            @else
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[11px] font-semibold">ยังไม่ส่ง</span>
+                            @endif
+                        </div>
+
+                        <div class="w-28">
+                            <label class="block text-[12px] text-slate-500 mb-1">คะแนน</label>
+                            <input type="number" name="score" min="0"
+                                   @if($maxScore) max="{{ $maxScore }}" @else disabled @endif
+                                   value="{{ $row->score }}"
+                                   placeholder="{{ $maxScore ? '0-' . $maxScore : 'ยังไม่มี' }}"
+                                   class="w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] disabled:bg-slate-100 disabled:text-slate-400">
+                        </div>
+
+                        <div class="flex-[2] min-w-[240px]">
+                            <label class="block text-[12px] text-slate-500 mb-1">ความเห็นถึงนักศึกษา</label>
+                            <textarea name="feedback" rows="2"
+                                      class="w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522]">{{ $row->feedback }}</textarea>
+                        </div>
+
+                        <div class="pt-6">
+                            <button type="submit"
+                                    class="px-5 py-2.5 rounded-xl bg-[#F26522] hover:bg-[#d8561b] text-white text-sm font-semibold transition-colors">
+                                บันทึก
+                            </button>
+                        </div>
+
+                    </div>
+
+                    @if($row->feedback_by)
+                    <div class="text-[11px] text-slate-400 mt-2">ให้โดย {{ $row->feedback_by }}</div>
+                    @endif
+                </form>
+                @empty
+                <div class="text-center text-slate-400 text-sm py-10">
+                    ยังไม่มีรายชื่อนักศึกษาในงานชิ้นนี้
+                </div>
+                @endforelse
+            </div>
+
+        </div>
+
     </main>
 </div>
 

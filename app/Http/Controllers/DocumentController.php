@@ -182,6 +182,36 @@ public function byAssignment($id)
 
     $assignmentName = $currentAssignment['assignment_name'] ?? 'ไม่พบงาน';
 
+    // 🔥 แถวให้คะแนน หนึ่งแถวต่อนักศึกษาหนึ่งคนในงานชิ้นนี้
+    //
+    // ใช้รายชื่อจาก assignment ไม่ใช่จากไฟล์ที่ส่ง เพราะครูต้องให้คะแนน
+    // คนที่ยังไม่ส่งได้ด้วย และต้องรู้ student_id เพื่อยิงไปที่ API
+    $assignmentId = $id;
+    $maxScore = $currentAssignment['max_score'] ?? null;
+
+    $gradeRows = collect($currentAssignment['students'] ?? [])->map(function ($row) use ($users, $documents) {
+        $sid = $row['student_id'] ?? null;
+        $sid = is_array($sid) ? ($sid['$oid'] ?? null) : $sid;
+
+        $user = $users->first(function ($u) use ($sid) {
+            $uId = is_array($u['_id']) ? ($u['_id']['$oid'] ?? $u['_id']) : $u['_id'];
+            return (string)$uId === (string)$sid;
+        });
+
+        $email = $user['email'] ?? null;
+
+        return (object)[
+            'student_id'  => $sid,
+            'name'        => $row['name'] ?? ($user['name'] ?? '-'),
+            'email'       => $email ?? '-',
+            'score'       => $row['score'] ?? null,
+            'feedback'    => $row['feedback'] ?? null,
+            'feedback_by' => $row['feedback_by'] ?? null,
+            // ส่งงานแล้วหรือยัง ดูจากไฟล์ที่อัปโหลดมาในงานชิ้นนี้
+            'submitted'   => $email ? $documents->contains('email', $email) : false,
+        ];
+    })->values();
+
     // 6. 🔥 เลือกหน้า View (Admin ไปหน้า admin / Teacher ไปหน้า teacher)
     $viewPath = (session('user_role') === 'ADMIN') ? 'admin.assignment-documents' : 'teacher.assignment-view';
 
@@ -190,7 +220,10 @@ public function byAssignment($id)
         'submitted',
         'notSubmitted',
         'totalStudents',
-        'assignmentName'
+        'assignmentName',
+        'assignmentId',
+        'maxScore',
+        'gradeRows'
     ));
 }
 public function destroy($id)

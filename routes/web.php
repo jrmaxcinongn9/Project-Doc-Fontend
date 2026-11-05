@@ -11,6 +11,7 @@ use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
 use App\Http\Controllers\TeacherStudentController;
+use App\Http\Controllers\TeacherGradeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VerifyEmailController;
@@ -131,6 +132,11 @@ Route::get('/teacher/assignment-view/{id}', [DocumentController::class, 'byAssig
 
 // Route สำหรับอาจารย์ดาวน์โหลดไฟล์ (ใช้ฟังก์ชันเดิมใน DocumentController ได้เลย)
 Route::get('/teacher/download/{id}', [DocumentController::class, 'downloadFile']);
+
+// ครูให้คะแนนและเขียน feedback รายคน
+// เดิมฟิลด์พวกนี้มีในฐานข้อมูลแต่ไม่มีหน้าจอไหนเขียนลงไปได้
+Route::patch('/teacher/assignment/{assignmentId}/students/{studentId}/grade',
+    [TeacherGradeController::class, 'store'])->name('teacher.grade');
 });
 /*
 |--------------------------------------------------------------------------
