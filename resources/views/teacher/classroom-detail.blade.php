@@ -114,7 +114,7 @@
                             </a>
 
                             <button type="button" 
-                                    onclick="openEditModal('{{ $a['id'] }}', '{{ $a['assignment_name'] }}', '{{ isset($a['due_date']) ? \Carbon\Carbon::parse($a['due_date'])->format('Y-m-d\TH:i') : '' }}')"
+                                    onclick="openEditModal('{{ $a['id'] }}', '{{ $a['assignment_name'] }}', '{{ isset($a['due_date']) ? \Carbon\Carbon::parse($a['due_date'])->format('Y-m-d\TH:i') : '' }}', '{{ $a['max_score'] ?? '' }}')"
                                     class="px-3 py-1.5 rounded-lg bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 hover:shadow transition-all font-medium text-sm flex items-center">
                                 แก้ไข
                             </button>
@@ -173,6 +173,15 @@
                         class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm text-slate-700 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white outline-none transition">
                 </div>
 
+
+                {{-- คะแนนเต็ม ต้องตั้งตรงนี้ ไม่งั้นให้คะแนนรายคนไม่ได้เลย
+                     เว้นว่างได้ถ้างานชิ้นนี้ไม่คิดคะแนน ยังเขียนความเห็นได้อยู่ --}}
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 mb-1.5 block">คะแนนเต็ม</label>
+                    <input type="number" name="max_score" min="1" max="1000" placeholder="เช่น 10"
+                        class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#FA4616]/20 focus:border-[#FA4616] focus:bg-white outline-none transition">
+                    <p class="text-[11px] text-slate-400 mt-1">เว้นว่างได้ถ้างานนี้ไม่คิดคะแนน แต่จะให้คะแนนรายคนไม่ได้</p>
+                </div>
                 <div>
                     <label class="text-sm font-semibold text-slate-600 mb-1.5 block">รายละเอียดงาน</label>
                     <textarea name="description" placeholder="ระบุข้อกำหนด เงื่อนไข หรือคำอธิบายเพิ่มเติม..." rows="3"
@@ -226,6 +235,13 @@
                     <input id="editDueDate" type="datetime-local" name="due_date" required
                            class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm text-slate-700 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white outline-none transition">
                 </div>
+
+                {{-- งานที่สร้างไว้ก่อนมีฟิลด์นี้ ตั้งคะแนนเต็มย้อนหลังได้ตรงนี้ --}}
+                <div>
+                    <label class="text-sm font-semibold text-slate-600 mb-1.5 block">คะแนนเต็ม</label>
+                    <input id="editMaxScore" type="number" name="max_score" min="1" max="1000" placeholder="เช่น 10"
+                           class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm text-slate-700 focus:ring-2 focus:ring-[#FA4616]/20 focus:border-[#FA4616] focus:bg-white outline-none transition">
+                </div>
             </div>
 
             <div class="flex justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
@@ -245,10 +261,12 @@
 
 <script>
 // 💡 ถอดตัวแปรข้อมูลวันเริ่มออก เหลือรับเฉพาะค่ากำหนดส่ง (dueDate)
-function openEditModal(id, name, dueDate) {
+function openEditModal(id, name, dueDate, maxScore) {
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editName').value = name;
     document.getElementById('editDueDate').value = dueDate || '';
+    // เติมคะแนนเต็มเดิม ไม่งั้นแก้ชื่องานแล้วคะแนนเต็มจะหายไป
+    document.getElementById('editMaxScore').value = maxScore || '';
     document.getElementById('editForm').action = '/teacher/assignment/' + id;
     document.body.style.overflow = 'hidden';
 }
