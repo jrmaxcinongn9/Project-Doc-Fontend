@@ -181,10 +181,17 @@ $assignments = collect($classData['assignments'] ?? [])
     {
         $token = session('api_token');
         try {
-            $response = Http::withToken($token)->post($this->apiUrl . '/assignment', [
+            $payload = [
                 'assignment_name' => $request->assignment_name,
                 'classroom'       => $request->classroom_id, // ส่ง ID ห้องเรียนไปผูก
-            ]);
+            ];
+
+            // คะแนนเต็ม ถ้าไม่ส่งไป งานจะไม่มีคะแนนเต็มและให้คะแนนรายคนไม่ได้
+            if ($request->filled('max_score')) {
+                $payload['max_score'] = (int) $request->max_score;
+            }
+
+            $response = Http::withToken($token)->post($this->apiUrl . '/assignment', $payload);
 
             if ($response->successful()) {
                 return back()->with('success', 'เพิ่มงานสำเร็จ!');
@@ -199,11 +206,16 @@ $assignments = collect($classData['assignments'] ?? [])
     $token = session('api_token');
 
     try {
+        $payload = ['assignment_name' => $request->assignment_name];
+
+        // ตั้งคะแนนเต็มทีหลังได้ งานเก่าที่ไม่มีค่านี้จึงยังแก้ให้ให้คะแนนได้
+        if ($request->filled('max_score')) {
+            $payload['max_score'] = (int) $request->max_score;
+        }
+
         $response = Http::withToken($token)->put(
             $this->apiUrl . '/assignment/' . $id,
-            [
-                'assignment_name' => $request->assignment_name,
-            ]
+            $payload
         );
 
         // 🔥 AJAX

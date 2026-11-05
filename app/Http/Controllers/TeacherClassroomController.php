@@ -155,6 +155,9 @@ class TeacherClassroomController extends Controller
                         'assignment_name' => $assign['assignment_name'] ?? $assign['assignmentName'] ?? '-',
                         'created_at'      => $createdAtFormatted, 
                         'due_date'        => $dueDateFormatted,   
+                        // คะแนนเต็ม ต้องส่งมาด้วย ไม่งั้นฟอร์มแก้งานจะเติมค่าเดิมไม่ได้
+                        // แล้วการแก้ชื่องานจะล้างคะแนนเต็มทิ้งโดยไม่ตั้งใจ
+                        'max_score'       => $assign['max_score'] ?? null,
                     ];
                 })->filter()->values();
                 
@@ -219,6 +222,13 @@ class TeacherClassroomController extends Controller
                 'due_date'        => $dueDateFormatted,
             ];
 
+            // คะแนนเต็ม ครูกรอกตอนสร้างงาน
+            // ถ้าไม่ส่งค่านี้ไป งานจะไม่มีคะแนนเต็ม และให้คะแนนรายคนไม่ได้เลย
+            // ช่องว่างคืองานที่ไม่คิดคะแนน ซึ่งยังเขียนความเห็นได้
+            if ($request->filled('max_score')) {
+                $payload['max_score'] = (int) $request->max_score;
+            }
+
             $response = Http::withToken($token)->post($this->apiUrl . '/assignment', $payload);
             if (!$response->successful() && $response->status() == 404) {
                 $response = Http::withToken($token)->post($this->apiUrl . '/doc', $payload);
@@ -252,6 +262,11 @@ class TeacherClassroomController extends Controller
                 'assignment_name' => $request->assignment_name,
                 'due_date'        => $dueDateFormatted,
             ];
+
+            // ตั้งคะแนนเต็มทีหลังได้ด้วย งานเก่าที่สร้างก่อนมีฟิลด์นี้จึงยังแก้ได้
+            if ($request->filled('max_score')) {
+                $payload['max_score'] = (int) $request->max_score;
+            }
 
             $response = Http::withToken($token)->put($this->apiUrl . '/assignment/' . $id, $payload);
             if (!$response->successful() && $response->status() == 404) {

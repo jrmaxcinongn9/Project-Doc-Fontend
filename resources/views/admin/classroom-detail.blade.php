@@ -173,6 +173,20 @@
                                    class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all">
                         </div>
 
+                        {{-- คะแนนเต็ม ถ้าไม่ตั้ง ครูจะให้คะแนนรายคนไม่ได้ --}}
+                        <div>
+                            <label class="text-xs font-semibold text-gray-600 mb-1 block">
+                                คะแนนเต็ม
+                            </label>
+                            <input type="number"
+                                   name="max_score"
+                                   min="1"
+                                   max="1000"
+                                   placeholder="เช่น 10"
+                                   class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all">
+                            <p class="text-[11px] text-gray-400 mt-1">เว้นว่างได้ถ้างานนี้ไม่คิดคะแนน แต่จะให้คะแนนรายคนไม่ได้</p>
+                        </div>
+
                         {{-- FOOTER --}}
                         <div class="flex gap-2 pt-3">
                             <button type="button"
