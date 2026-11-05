@@ -1,5 +1,18 @@
 <x-layouts.app title="จัดการผู้ใช้">
 
+@php
+    // ค่าเดียวกับที่นักศึกษาเลือกตอนสมัคร และที่ครูใช้เป็นความเชี่ยวชาญ
+    $categoryNames = [
+        'SOFTWARE'  => 'ซอฟต์แวร์ / พัฒนาโปรแกรม',
+        'NETWORK'   => 'เครือข่ายและระบบ',
+        'DATA'      => 'ข้อมูลและวิเคราะห์',
+        'HARDWARE'  => 'ฮาร์ดแวร์และอิเล็กทรอนิกส์',
+        'DESIGN'    => 'ออกแบบ',
+        'BUSINESS'  => 'ธุรกิจและบริการ',
+        'OTHER'     => 'อื่น ๆ',
+    ];
+@endphp
+
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
@@ -97,6 +110,17 @@
                                         <span class="px-3 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100 text-xs font-bold tracking-wide">ADMIN</span>
                                     @elseif($u['role'] === 'TEACHER')
                                         <span class="px-3 py-1 rounded-full bg-orange-50 text-[#F26522] border border-orange-100 text-xs font-bold tracking-wide">TEACHER</span>
+                                        {{-- ครูที่ไม่มีสาขา จะไม่ถูกจับคู่กับนักศึกษาคนไหนเลย
+                                             ต้องเห็นได้จากตารางว่าใครยังไม่ได้ตั้ง --}}
+                                        @if(!empty($u['category']))
+                                            <div class="text-[11px] text-slate-500 mt-1">
+                                                สาขา {{ $categoryNames[$u['category']] ?? $u['category'] }}
+                                            </div>
+                                        @else
+                                            <div class="text-[11px] text-amber-600 mt-1 font-medium">
+                                                ยังไม่ได้ตั้งสาขา
+                                            </div>
+                                        @endif
                                     @else
                                         <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold tracking-wide">USER</span>
                                     @endif
@@ -299,6 +323,22 @@
                     </select>
                 </div>
 
+                {{-- สาขาที่ใช้จับคู่ครูกับนักศึกษา
+                     เดิมตั้งค่านี้จากหน้าเว็บไม่ได้เลย ต้องยิง API เอง
+                     ครูจึงไม่มีสาขาและไม่เห็นนักศึกษาสักคน --}}
+                <div>
+                    <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">สาขาที่ใช้จับคู่</label>
+                    <select id="editCategory" name="category" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm bg-white font-medium text-slate-700">
+                        <option value="">ยังไม่ระบุ</option>
+                        @foreach($categoryNames as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-[11px] text-slate-400 mt-1 ml-1">
+                        * ครูใช้เป็นความเชี่ยวชาญ นักศึกษาใช้เป็นสาขาของที่ฝึกงาน ค่าตรงกันจึงจับคู่กัน
+                    </p>
+                </div>
+
                 <div class="border-t border-slate-100 pt-4 mt-2">
                     <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">อีเมลเข้าระบบ</label>
                     <input id="editEmail" name="email" type="email" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm bg-slate-50 text-slate-500">
@@ -375,6 +415,7 @@ function openEditModalSafe(user) {
     editRole.value = user.role || '';
     editStudentId.value = user.student_id || '';
     editYear.value = user.academicYear || '';
+    document.getElementById('editCategory').value = user.category || '';
 
     const majorSelect = document.getElementById('editMajor');
     majorSelect.value = "";
