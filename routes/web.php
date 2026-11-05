@@ -14,6 +14,7 @@ use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TeacherGradeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\VerifyEmailController;
 
 /*
@@ -70,6 +71,10 @@ Route::group(['middleware' => function ($request, $next) {
 
 Route::get('/student/dashboard', [StudentController::class, 'dashboard']);
 Route::get('/student/profile', fn() => view('student.profile'));
+
+// นักศึกษาดูคะแนนและความเห็นของตัวเอง
+// อาจารย์บอกว่าต้อง View Score และ View Feedback ได้ เดิมไม่มีหน้านี้เลย
+Route::get('/student/scores', [StudentScoreController::class, 'index'])->name('student.scores');
 Route::post('/student/assignment/submit', [StudentController::class, 'submitAssignment'])->name('student.assignment.submit');
 Route::get('/student/file/download/{id}', [StudentController::class, 'downloadFile'])->name('student.file.download');
 });
