@@ -31,6 +31,24 @@
                 </a>
             </li>
 
+            <li>
+                <a href="/teacher/students"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                          {{ request()->is('teacher/students*')
+                             ? 'bg-orange-50 text-[#F26522] font-semibold'
+                             : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium' }}">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-5 h-5 transition-colors {{ request()->is('teacher/students*') ? 'text-[#F26522]' : 'text-slate-400' }}"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                              d="M5.121 17.804A4 4 0 018 17h8a4 4 0 013 1m-6-10a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+
+                    <span class="text-[14px]">นักศึกษาของฉัน</span>
+                </a>
+            </li>
+
             </ul>
     </div>
 
