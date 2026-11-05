@@ -7,6 +7,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminApprovalController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
@@ -165,7 +166,9 @@ Route::group(['middleware' => function ($request, $next) {
 
 }], function () {
 
-    Route::get('/admin/dashboard', [AdminUserController::class, 'index'])->name('admin.dashboard');
+    // เดิมหน้านี้ใช้ controller เดียวกับหน้าจัดการผู้ใช้ และนับได้แค่สองตัวเลข
+    // ส่วนช่องเอกสารกับงานฝึกเขียนเลขศูนย์ตายตัวไว้ในโค้ด
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/internship', fn() => view('admin.manage-internship'));
 
     // =========================
