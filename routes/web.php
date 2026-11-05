@@ -6,6 +6,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminApprovalController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
@@ -189,6 +190,17 @@ Route::group(['middleware' => function ($request, $next) {
     // =========================
     // USERS
     // =========================
+    // =========================
+    // PENDING APPROVAL
+    // =========================
+    // ฝั่ง API มีเส้นยืนยันอีเมลและอนุมัติอยู่แล้ว แต่หน้าเว็บไม่มีปุ่มเรียกเลย
+    // ด่านอนุมัติจึงใช้งานจริงไม่ได้ ต้องยิงคำสั่งจาก terminal เอง
+    Route::get('/admin/pending', [AdminApprovalController::class, 'index'])->name('pending.index');
+    Route::patch('/admin/pending/{id}/verify-email', [AdminApprovalController::class, 'verifyEmail'])->name('pending.verifyEmail');
+    Route::post('/admin/pending/{id}/resend-verify', [AdminApprovalController::class, 'resendVerify'])->name('pending.resendVerify');
+    Route::patch('/admin/pending/{id}/approve', [AdminApprovalController::class, 'approve'])->name('pending.approve');
+    Route::patch('/admin/pending/{id}/reject', [AdminApprovalController::class, 'reject'])->name('pending.reject');
+
     Route::get('/admin/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::post('/admin/users', [AdminUserController::class, 'store'])->name('users.store');
     Route::patch('/admin/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
