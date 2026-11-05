@@ -62,9 +62,21 @@ class AuthController extends Controller
         /**
          * ❌ LOGIN FAIL (API ตอบกลับมาแต่ไม่ผ่าน)
          */
-        return back()->withErrors([
-            'email' => $response->json()['message'] ?? 'Email หรือ Password ไม่ถูกต้อง'
-        ])->withInput();
+        $message = $response->json()['message'] ?? 'Email หรือ Password ไม่ถูกต้อง';
+
+        // ยังไม่ยืนยันอีเมลคือทางตันที่พบบ่อยที่สุด
+        // ลิงก์ที่ได้ตอนสมัครโชว์รอบเดียว รีเฟรชแล้วหายถาวร
+        // ตรงนี้มีทั้งอีเมลและรหัสผ่านอยู่ในมือแล้ว จึงขอลิงก์ใหม่ให้เลย
+        // ผู้ใช้ไม่ต้องกรอกอะไรเพิ่ม และไม่ต้องรบกวนผู้ดูแลระบบ
+        if ($response->status() === 403 && str_contains($message, 'ยืนยันอีเมล')) {
+            $redirect = back()->withErrors(['email' => $message])->withInput();
+
+            $link = $this->requestVerifyLink($baseUrl, $request->email, $request->password);
+
+            return $link ? $redirect->with('verify_link', $link) : $redirect;
+        }
+
+        return back()->withErrors(['email' => $message])->withInput();
 
     } catch (\Exception $e) {
 
@@ -139,6 +151,29 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             return back()->with('error', 'API ล่ม')->withInput();
+        }
+    }
+
+    /**
+     * ขอลิงก์ยืนยันใหม่แทนผู้ใช้
+     *
+     * API ต้องการรหัสผ่านด้วย เพราะลิงก์ยืนยันคือกุญแจของบัญชีนั้น
+     * ขอด้วยอีเมลอย่างเดียวจะกลายเป็นว่าใครก็ยืนยันแทนคนอื่นได้
+     *
+     * ล้มเหลวเมื่อไหร่ก็เงียบไป หน้า login ยังแสดงข้อความเดิมตามปกติ
+     * ไม่ควรให้การขอลิงก์พังหน้า login ทั้งหน้า
+     */
+    private function requestVerifyLink(string $baseUrl, string $email, string $password): ?string
+    {
+        try {
+            $response = Http::timeout(15)->post($baseUrl . '/user/resend-verify-mine', [
+                'email'    => $email,
+                'password' => $password,
+            ]);
+
+            return $response->successful() ? $response->json('verifyLink') : null;
+        } catch (\Exception $e) {
+            return null;
         }
     }
 }
