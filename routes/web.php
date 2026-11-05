@@ -13,6 +13,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TeacherClassroomController;
 use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TeacherGradeController;
+use App\Http\Controllers\TeacherDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentScoreController;
@@ -105,6 +106,9 @@ Route::group(['middleware' => function ($request, $next) {
 }], function () {
 
     // 1. เปลี่ยนบรรทัดนี้ ให้วิ่งไปหา ClassroomController
+    // อาจารย์บอกว่าเมนูครูควรมีสองเมนู จัดการห้องเรียน กับ dashboard
+    Route::get('/teacher/dashboard', [TeacherDashboardController::class, 'index'])->name('teacher.dashboard');
+
     Route::get('/teacher/classroom', [TeacherClassroomController::class, 'index']);
     
     // 2. เพิ่ม Route สำหรับดูรายละเอียด (Show) และสร้าง (Store)
