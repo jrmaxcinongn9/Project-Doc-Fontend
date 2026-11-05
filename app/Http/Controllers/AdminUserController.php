@@ -132,6 +132,7 @@ class AdminUserController extends Controller
             'email'      => 'required|email',
             'role'       => 'required|in:USER,TEACHER',
             'student_id' => 'nullable|string|max:11',
+            'category'   => 'nullable|in:SOFTWARE,NETWORK,DATA,HARDWARE,DESIGN,BUSINESS,OTHER',
         ]);
 
         try {
@@ -144,6 +145,10 @@ class AdminUserController extends Controller
             if (!empty($request->student_id)) $payload['student_id'] = $request->student_id;
             if (!empty($request->academicYear)) $payload['academicYear'] = $request->academicYear;
             if (!empty($request->major)) $payload['major'] = $request->major ?? null;
+
+            // สาขาที่ใช้จับคู่ครูกับนักศึกษา เดิมค่านี้ถูกทิ้งไปทั้งก้อน
+            // ครูจึงไม่มีสาขาและไม่เห็นนักศึกษาสักคน แก้จากหน้าเว็บก็ไม่ได้
+            if (!empty($request->category)) $payload['category'] = $request->category;
 
             $response = Http::withToken($token)->acceptJson()->patch($this->apiUrl . '/user/' . $id, $payload);
 
