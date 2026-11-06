@@ -12,5 +12,7 @@
 
     {{ $slot }}
 
+    <x-password-toggle />
+
 </body>
 </html>

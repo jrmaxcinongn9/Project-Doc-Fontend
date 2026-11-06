@@ -38,14 +38,15 @@
 
         <div class="flex items-center gap-3">
 
-            <button onclick="openSupport()"
+            {{-- เดิมเรียก openSupport() ซึ่งไม่มีอยู่จริง กดแล้วไม่เกิดอะไร --}}
+            <a href="/support"
                 class="px-5 py-2 rounded-xl text-white/80
                        border border-white/10 
                        bg-white/5 backdrop-blur-xl
                        hover:bg-white/10 hover:text-white
                        transition-all">
                 Support
-            </button>
+            </a>
 
             <a href="/register"
                class="px-5 py-2 rounded-xl text-white font-semibold

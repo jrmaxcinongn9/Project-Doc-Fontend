@@ -157,10 +157,19 @@ class NotificationController extends Controller
 
     private function forAdmin(string $token): Collection
     {
-        return collect($this->get($token, '/user/pending'))->map(fn ($u) => [
+        $pending = collect($this->get($token, '/user/pending'))->map(fn ($u) => [
             'text' => 'บัญชี ' . ($u['name'] ?? $u['email'] ?? '-') . ' รออนุมัติ',
             'url'  => '/admin/pending',
             'at'   => !empty($u['createdAt']) ? Carbon::parse($u['createdAt']) : null,
         ]);
+
+        // เรื่องที่แจ้งผ่านหน้าช่วยเหลือ ที่ยังไม่ปิด
+        $support = collect($this->get($token, '/support?status=OPEN'))->map(fn ($t) => [
+            'text' => ($t['name'] ?? 'ผู้ใช้') . ' แจ้งปัญหา: ' . mb_strimwidth((string) ($t['message'] ?? ''), 0, 60, '…'),
+            'url'  => '/admin/support',
+            'at'   => !empty($t['createdAt']) ? Carbon::parse($t['createdAt']) : null,
+        ]);
+
+        return $pending->concat($support);
     }
 }

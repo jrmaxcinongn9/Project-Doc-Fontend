@@ -41,6 +41,10 @@ Route::post('/login',  [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // แจ้งเตือนในเว็บ ทุกบทบาทใช้ร่วมกัน ข้อมูลที่ได้ขึ้นกับบทบาทใน session
+// ช่วยเหลือ: คำถามที่พบบ่อยและแจ้งปัญหา เปิดได้โดยไม่ต้อง login
+Route::get('/support', [\App\Http\Controllers\SupportController::class, 'show'])->name('support');
+Route::post('/support', [\App\Http\Controllers\SupportController::class, 'store'])->name('support.store');
+
 // รูปโปรไฟล์ของตัวเอง ทุกบทบาท
 Route::get('/profile/avatar', [\App\Http\Controllers\ProfileAvatarController::class, 'show'])->name('profile.avatar');
 Route::post('/profile/avatar', [\App\Http\Controllers\ProfileAvatarController::class, 'store'])->name('profile.avatar.store');
@@ -250,6 +254,10 @@ Route::group(['middleware' => function ($request, $next) {
     // ฝั่ง API มีเส้นยืนยันอีเมลและอนุมัติอยู่แล้ว แต่หน้าเว็บไม่มีปุ่มเรียกเลย
     // ด่านอนุมัติจึงใช้งานจริงไม่ได้ ต้องยิงคำสั่งจาก terminal เอง
     Route::get('/admin/pending', [AdminApprovalController::class, 'index'])->name('pending.index');
+    // เรื่องที่ผู้ใช้แจ้งผ่านหน้าช่วยเหลือ
+    Route::get('/admin/support', [\App\Http\Controllers\SupportController::class, 'adminIndex'])->name('admin.support');
+    Route::post('/admin/support/{id}/reply', [\App\Http\Controllers\SupportController::class, 'adminReply'])->name('admin.support.reply');
+    Route::patch('/admin/support/{id}', [\App\Http\Controllers\SupportController::class, 'adminStatus'])->name('admin.support.status');
     Route::post('/admin/pending/bulk', [AdminApprovalController::class, 'bulk'])->name('pending.bulk');
     Route::patch('/admin/pending/{id}/verify-email', [AdminApprovalController::class, 'verifyEmail'])->name('pending.verifyEmail');
     Route::post('/admin/pending/{id}/resend-verify', [AdminApprovalController::class, 'resendVerify'])->name('pending.resendVerify');

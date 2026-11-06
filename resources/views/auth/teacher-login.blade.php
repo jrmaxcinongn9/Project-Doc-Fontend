@@ -48,6 +48,8 @@
                 </button>
             </form>
 
+            <p class="mt-4 text-center text-sm text-gray-500">เข้าระบบไม่ได้? <a href="/support" class="text-[#F26522] hover:underline">ขอความช่วยเหลือ</a></p>
+
         </div>
     </div>
 

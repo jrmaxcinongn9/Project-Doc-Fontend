@@ -89,6 +89,18 @@
                     <span class="text-[14px]">Document</span>
                 </a>
             </li> -->
+            <li>
+                <a href="/admin/support"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                          {{ request()->is('admin/support*')
+                             ? 'bg-orange-50 text-[#F26522] font-semibold'
+                             : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ request()->is('admin/support*') ? 'text-[#F26522]' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 13h4l2 3h6l2-3h4M5 5h14l2 8v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6l2-8z" />
+                    </svg>
+                    <span class="text-[14px]">เรื่องที่แจ้ง</span>
+                </a>
+            </li>
         </ul>
     </div>
 

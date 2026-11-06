@@ -68,6 +68,18 @@
                 </a>
             </li>
 
+            <li>
+                <a href="/support"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                          {{ request()->is('support*')
+                             ? 'bg-orange-50 text-[#F26522] font-semibold'
+                             : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ request()->is('support*') ? 'text-[#F26522]' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.2 9a3.8 3.8 0 017.3 1.4c0 2.6-3.5 3-3.5 5.1M12 18h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-[14px]">ช่วยเหลือ</span>
+                </a>
+            </li>
             </ul>
     </div>
 
