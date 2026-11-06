@@ -48,12 +48,13 @@
                 Support
             </a>
 
+            {{-- ปุ่มขอบบาง ไม่ใช่ส้มทึบ ให้ปุ่ม Login ในการ์ดเด่นที่สุดปุ่มเดียว
+                 คนที่ยังไม่มีบัญชีมีลิงก์สมัครใต้ปุ่ม Login อีกทาง --}}
             <a href="/register"
-               class="px-5 py-2 rounded-xl text-white font-semibold
-                      bg-gradient-to-r from-[#F58220] to-[#E06B00]
-                      shadow-lg shadow-orange-500/30
-                      hover:shadow-orange-500/60
-                      hover:-translate-y-0.5 transition-all">
+               class="px-5 py-2 rounded-xl text-[#F8A04D] font-semibold
+                      border border-[#F58220]/70 bg-transparent
+                      hover:bg-[#F58220]/10 hover:text-[#FDBA74]
+                      transition-all">
                 Sign Up
             </a>
 
@@ -160,6 +161,12 @@
                     Login
                 </button>
             </form>
+
+            {{-- คนที่ยังไม่มีบัญชีเห็นทางสมัครตรงจุดที่กำลังมองอยู่ ไม่ต้องหาปุ่มมุมขวาบน --}}
+            <p class="mt-6 pt-5 border-t border-white/10 text-center text-sm text-white/60">
+                Don't have an account?
+                <a href="/register" class="font-semibold text-[#F8A04D] hover:text-[#FDBA74] hover:underline">Sign up</a>
+            </p>
 
         </div>
 

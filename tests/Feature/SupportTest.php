@@ -38,6 +38,17 @@ class SupportTest extends TestCase
             ->assertDontSee('openSupport()', false);
     }
 
+    public function test_the_student_login_has_a_sign_up_link_under_the_form(): void
+    {
+        $html = $this->withoutVite()->get('/login/student')->getContent();
+
+        $this->assertStringContainsString("Don't have an account?", $html);
+        // ปุ่มมุมขวาบนกับลิงก์ใต้ฟอร์ม
+        $this->assertSame(2, substr_count($html, 'href="/register"'));
+        // ปุ่มส้มทึบเหลือแค่ Login ปุ่มเดียว
+        $this->assertStringNotContainsString('from-[#F58220] to-[#E06B00]\n                      shadow-lg shadow-orange-500/30\n                      hover:shadow-orange-500/60', $html);
+    }
+
     public function test_teacher_and_admin_login_link_to_help(): void
     {
         $this->withoutVite()->get('/login/teacher')->assertSee('href="/support"', false);
