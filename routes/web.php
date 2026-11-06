@@ -51,6 +51,8 @@ Route::post('/notifications/seen', [\App\Http\Controllers\NotificationController
 Route::get('/register', fn() => view('auth.register'));
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::get('/verify-email', [VerifyEmailController::class, 'verify'])->name('verify.email');
+// ลิงก์เข้าสู่ระบบครั้งเดียวจากเมลแจ้งอนุมัติ
+Route::get('/login/magic', [AuthController::class, 'magic'])->name('login.magic');
 Route::get('/forgot-password', fn() => view('auth.forgot-password'));
 Route::post('/forgot-password/send',       [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);

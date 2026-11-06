@@ -36,6 +36,12 @@ class LogoutWhenApiTokenExpires
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // หน้าที่ไม่ต้อง login เช่น ลิงก์ยืนยันอีเมลหรือลิงก์เข้าสู่ระบบจากเมล ให้ทำงานต่อด้วย session ที่ล้างแล้ว
+        // เดิมพาไปหน้า login ทุกหน้า คนที่เคยเข้าระบบไว้ในเบราว์เซอร์นั้นจึงกดลิงก์ในเมลไม่ได้
+        if (!$this->needsLogin($request)) {
+            return $next($request);
+        }
+
         return redirect($this->loginPathFor($role))
             ->withErrors(['email' => 'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่']);
     }
@@ -61,6 +67,11 @@ class LogoutWhenApiTokenExpires
         }
 
         return (int) $exp <= time() + self::LEEWAY_SECONDS;
+    }
+
+    private function needsLogin(Request $request): bool
+    {
+        return $request->is('student/*', 'teacher/*', 'admin/*', 'profile/*', 'notifications', 'notifications/*', 'assignments/*');
     }
 
     private function loginPathFor(?string $role): string

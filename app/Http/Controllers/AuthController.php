@@ -95,6 +95,49 @@ class AuthController extends Controller
      * Redirect ตาม role
      * =========================
      */
+    /**
+     * เข้าสู่ระบบจากลิงก์ครั้งเดียวในเมล
+     * ใช้ทั้งลิงก์ในเมลแจ้งอนุมัติ และหลังกดลิงก์ยืนยันอีเมลของบัญชีที่อนุมัติแล้ว
+     */
+    public function magic(Request $request)
+    {
+        return $this->loginWithToken((string) $request->query('token', ''));
+    }
+
+    public function loginWithToken(string $token)
+    {
+        if ($token === '') {
+            return redirect('/login/student')->withErrors(['email' => 'ลิงก์เข้าสู่ระบบไม่ถูกต้อง']);
+        }
+
+        try {
+            $response = Http::acceptJson()->connectTimeout(30)->timeout(60)
+                ->post(rtrim(config('services.api_url'), '/') . '/auth/magic', ['token' => $token]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            return redirect('/login/student')->withErrors(['email' => 'เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณากดลิงก์อีกครั้ง']);
+        }
+
+        if (!$response->successful()) {
+            $msg = $response->json('message');
+            return redirect('/login/student')->withErrors([
+                'email' => is_string($msg) ? $msg : 'ลิงก์เข้าสู่ระบบใช้ไม่ได้ กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน',
+            ]);
+        }
+
+        $data = $response->json();
+        $user = array_merge([
+            '_id' => null, 'name' => '', 'email' => '', 'role' => 'USER',
+            'major' => '', 'academicYear' => '', 'student_id' => null,
+        ], $data['user'] ?? []);
+
+        // ล้าง session เก่าก่อน กันไม่ให้ค้างบัญชีคนอื่นที่เคย login ในเบราว์เซอร์นี้
+        session()->invalidate();
+        session()->regenerateToken();
+        session(['api_token' => $data['access_token'] ?? null, 'user' => $user]);
+
+        return $this->redirectByRole($user['role'])->with('success', 'เข้าสู่ระบบเรียบร้อย');
+    }
+
     private function redirectByRole($role)
     {
         return match ($role) {

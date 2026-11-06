@@ -78,4 +78,30 @@ class ExpiredTokenTest extends TestCase
     {
         $this->withoutVite()->get('/login/teacher')->assertOk();
     }
+
+    public function test_an_expired_session_does_not_block_the_verify_link(): void
+    {
+        Http::fake(['*/user/verify-email*' => Http::response(['message' => 'ยืนยันอีเมลเรียบร้อย บัญชีอยู่ระหว่างรอผู้ดูแลระบบอนุมัติ'], 200)]);
+
+        $this->as('ADMIN', $this->jwt(time() - 60))
+            ->withoutVite()
+            ->get('/verify-email?token=v1')
+            ->assertOk()
+            ->assertSee('ยืนยันอีเมลสำเร็จ', false);
+
+        $this->assertNull(session('api_token'));
+    }
+
+    public function test_an_expired_session_does_not_block_the_login_link(): void
+    {
+        Http::fake(['*/auth/magic' => Http::response([
+            'access_token' => 'new', 'user' => ['role' => 'USER'],
+        ], 200)]);
+
+        $this->as('TEACHER', $this->jwt(time() - 60))
+            ->get('/login/magic?token=t')
+            ->assertRedirect('/student/dashboard');
+
+        $this->assertSame('new', session('api_token'));
+    }
 }

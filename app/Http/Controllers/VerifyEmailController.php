@@ -26,11 +26,16 @@ class VerifyEmailController extends Controller
                 ->timeout(15)
                 ->get($apiUrl, ['token' => $token]);
 
+            // บัญชีอนุมัติแล้ว ยืนยันอีเมลเสร็จเข้าระบบให้เลย ไม่ต้องกรอกรหัสผ่าน
+            if ($response->successful() && $response->json('login_token')) {
+                return app(AuthController::class)->loginWithToken((string) $response->json('login_token'));
+            }
+
             if ($response->successful()) {
                 return view('auth.verify-email', [
                     'ok'      => true,
                     'message' => $response->json()['message']
-                        ?? 'ยืนยันอีเมลเรียบร้อย บัญชีอยู่ระหว่างรอผู้ดูแลระบบอนุมัติ',
+                        ?? 'ยืนยันอีเมลเรียบร้อย บัญชีอยู่ระหว่างรอผู้ดูแลระบบอนุมัติ เมื่ออนุมัติแล้วจะได้รับอีเมลพร้อมลิงก์เข้าสู่ระบบ',
                 ]);
             }
 
