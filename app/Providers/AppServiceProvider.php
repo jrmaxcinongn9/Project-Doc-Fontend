@@ -20,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        URL::forceScheme('https');
+        // บังคับ https เฉพาะบน Vercel (APP_ENV=production)
+        // ถ้าบังคับในเครื่องด้วย ลิงก์และ redirect จะชี้ไป https://localhost
+        // ซึ่ง php -S ตอบไม่ได้ เว็บจึงเปิดไม่ขึ้น
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }

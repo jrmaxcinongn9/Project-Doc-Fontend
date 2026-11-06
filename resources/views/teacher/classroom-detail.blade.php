@@ -16,10 +16,18 @@
                 </p>
             </div>
 
-            <a href="/teacher/classroom"
-               class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition-all text-sm font-medium flex items-center gap-1">
-                ← กลับหน้าหลัก
-            </a>
+            <div class="flex items-center gap-2">
+                {{-- คะแนนทุกงานของทุกคนในห้อง เป็นไฟล์ Excel --}}
+                <a href="/teacher/classroom/{{ $classroom->id }}/export"
+                   class="px-4 py-2 rounded-lg bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition-all text-sm font-semibold flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+                    ส่งออกคะแนน (Excel)
+                </a>
+                <a href="/teacher/classroom"
+                   class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition-all text-sm font-medium flex items-center gap-1">
+                    ← กลับหน้าหลัก
+                </a>
+            </div>
         </div>
 
    

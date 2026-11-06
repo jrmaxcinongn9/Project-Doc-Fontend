@@ -77,6 +77,57 @@ class AdminApprovalController extends Controller
     }
 
     /**
+     * อนุมัติหรือปฏิเสธหลายบัญชีพร้อมกัน
+     *
+     * ตอนอนุมัติ ยืนยันอีเมลให้ด้วยได้ (ค่าปริยาย) เพราะบัญชีที่อนุมัติแต่ยังไม่ยืนยันอีเมล
+     * ยัง login ไม่ได้ และระบบส่งเมลยังใช้งานไม่ได้
+     * ถ้าบางบัญชีไม่ผ่าน บัญชีอื่นยังทำต่อ แล้วบอกว่าไม่ผ่านกี่บัญชี
+     */
+    public function bulk(Request $request)
+    {
+        $token = session('api_token');
+
+        if (!$token) {
+            return redirect('/login/admin')->withErrors('กรุณาเข้าสู่ระบบใหม่');
+        }
+
+        $request->validate([
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'string',
+            'action' => 'required|in:approve,reject',
+        ], [
+            'ids.required' => 'กรุณาเลือกบัญชีอย่างน้อย 1 บัญชี',
+        ]);
+
+        $approve = $request->input('action') === 'approve';
+        $verify = $approve && $request->boolean('verify');
+        $done = 0;
+        $failed = 0;
+
+        try {
+            foreach (array_unique($request->input('ids')) as $id) {
+                $id = rawurlencode($id);
+
+                if ($verify && !$this->client($token)->patch($this->apiUrl . "/user/{$id}/verify-email")->successful()) {
+                    $failed++;
+                    continue;
+                }
+
+                $res = $this->client($token)->patch($this->apiUrl . "/user/{$id}/" . ($approve ? 'approve' : 'reject'));
+                $res->successful() ? $done++ : $failed++;
+            }
+        } catch (ConnectionException $e) {
+            return back()->withErrors(['api' => 'เซิร์ฟเวอร์กำลังเริ่มทำงาน ทำไปแล้ว ' . $done . ' บัญชี กรุณาลองอีกครั้ง']);
+        }
+
+        $redirect = back()->with('success', ($approve ? 'อนุมัติ' : 'ปฏิเสธ') . "แล้ว {$done} บัญชี");
+
+        return $failed
+            ? $redirect->withErrors(['api' => "ทำรายการไม่สำเร็จ {$failed} บัญชี"])
+            : $redirect;
+    }
+
+    /**
      * ขอลิงก์ยืนยันใหม่ แล้วเอาลิงก์มาแสดงบนหน้าเว็บ
      * ระบบส่งเมลยังใช้งานไม่ได้ ถ้าไม่โชว์ลิงก์ admin ก็ไม่มีอะไรส่งต่อให้ผู้ใช้
      */
@@ -116,7 +167,7 @@ class AdminApprovalController extends Controller
             $response = $this->client($token)->{$method}($this->apiUrl . $path);
 
             if (!$response->successful()) {
-                return back()->withErrors(['api' => 'ทำรายการไม่สำเร็จ: ' . $response->body()]);
+                return back()->withErrors(['api' => $this->apiError($response)]);
             }
 
             return back()->with('success', $success);

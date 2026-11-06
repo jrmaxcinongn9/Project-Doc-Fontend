@@ -40,6 +40,13 @@
             @endif
 
             {{-- 🔴 ERROR TOAST --}}
+            {{-- error จากการแก้ไขผู้ใช้ เดิมไม่มีที่แสดง กดบันทึกแล้วเงียบ --}}
+            @if($errors->any() && !$errors->has('delete'))
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+                {{ $errors->first() }}
+            </div>
+            @endif
+
             @if($errors->has('delete'))
             <div class="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl shadow-sm animate-fade-in-down">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -185,65 +192,86 @@
         <form method="POST" action="/admin/users" class="flex flex-col h-full overflow-hidden">
             @csrf
             <div class="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
-                
+
+                {{-- error จาก API เช่นอีเมลซ้ำ เดิมถูกเก็บไว้แต่ไม่เคยแสดง --}}
+                @if($errors->create->has('api'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    {{ $errors->create->first('api') }}
+                </div>
+                @endif
+
+                <div>
+                    <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">ประเภทบัญชี <span class="text-red-500">*</span></label>
+                    <select id="createRole" name="role" onchange="syncCreateRole()"
+                            class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] outline-none transition-all text-sm bg-white font-medium text-slate-700">
+                        <option value="USER" {{ old('role', 'USER') === 'USER' ? 'selected' : '' }}>นักศึกษา</option>
+                        <option value="TEACHER" {{ old('role') === 'TEACHER' ? 'selected' : '' }}>อาจารย์</option>
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
-                    <input name="name" required placeholder="กรอกชื่อและนามสกุล" value="{{ old('name') }}"
-                           class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] outline-none transition-all text-sm">
+                    <input name="name" required minlength="4" placeholder="กรอกชื่อและนามสกุล" value="{{ old('name') }}"
+                           class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm {{ $errors->create->has('name') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                    @if($errors->create->has('name')) <p class="text-red-500 text-xs mt-1 ml-1">{{ $errors->create->first('name') }}</p> @endif
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                {{-- เฉพาะนักศึกษา ครูไม่มีรหัสนักศึกษาและสาขาวิชา --}}
+                <div id="studentOnly" class="space-y-4">
                     <div>
-                        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">รหัสนักศึกษา</label>
-                        <input name="student_id" placeholder="รหัส 11 หลัก" value="{{ old('student_id') }}"
-                               class="w-full border {{ $errors->has('student_id') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }} px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm">
-                        @error('student_id') <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p> @enderror
+                        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">รหัสนักศึกษา <span class="text-red-500">*</span></label>
+                        <input id="createStudentId" name="student_id" placeholder="ตัวเลข 11 หลัก" value="{{ old('student_id') }}"
+                               inputmode="numeric" autocomplete="off" maxlength="11" pattern="[0-9]{11}"
+                               title="รหัสนักศึกษาต้องเป็นตัวเลข 11 หลัก"
+                               oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11); updateIdCount()"
+                               class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm tracking-wider {{ $errors->create->has('student_id') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                        <div class="flex justify-between mt-1 ml-1">
+                            <span class="text-red-500 text-xs">@if($errors->create->has('student_id')){{ $errors->create->first('student_id') }}@endif</span>
+                            <span id="createIdCount" class="text-[11px] text-slate-400">0/11</span>
+                        </div>
                     </div>
+
                     <div>
-                        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">ปีการศึกษา</label>
-                        <select name="academicYear" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] outline-none transition-all text-sm bg-white">
-                            <option value="">เลือกปี</option>
-                            @for ($i = 2569; $i >= 2560; $i--)
-                                <option value="{{ $i }}" {{ old('academicYear') == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
+                        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">สาขาวิชา <span class="text-red-500">*</span></label>
+                        <select id="createMajor" name="major" class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm bg-white {{ $errors->create->has('major') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                            <option value="">เลือกสาขาวิชา</option>
+                            <optgroup label="ภาควิชาครุศาสตร์อุตสาหกรรม">
+                                @foreach(['ครุศาสตร์เครื่องกล', 'ครุศาสตร์ไฟฟ้า', 'ครุศาสตร์โยธา', 'ครุศาสตร์อุตสาหการ'] as $m)
+                                    <option value="{{ $m }}" {{ old('major') === $m ? 'selected' : '' }}>{{ $m }}</option>
+                                @endforeach
+                            </optgroup>
                         </select>
+                        @if($errors->create->has('major')) <p class="text-red-500 text-xs mt-1 ml-1">{{ $errors->create->first('major') }}</p> @endif
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">สาขาวิชา</label>
-                    <select id="editMajor" name="major" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm bg-white">
-                        <option value="">เลือกสาขาวิชา</option>
-                        <optgroup label="ภาควิชาครุศาสตร์อุตสาหกรรม">
-                            <option value="ครุศาสตร์เครื่องกล">ครุศาสตร์เครื่องกล</option>
-                            <option value="ครุศาสตร์ไฟฟ้า">ครุศาสตร์ไฟฟ้า</option>
-                            <option value="ครุศาสตร์โยธา">ครุศาสตร์โยธา</option>
-                            <option value="ครุศาสตร์อุตสาหการ">ครุศาสตร์อุตสาหการ</option>
-                            <option value="บุคลากร">บุคลากร</option>
-                        </optgroup>
+                    <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">สาขาที่ใช้จับคู่ <span class="text-red-500">*</span></label>
+                    <select name="category" required class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm bg-white font-medium text-slate-700 {{ $errors->create->has('category') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                        <option value="">เลือกสาขา</option>
+                        @foreach($categoryNames as $value => $catLabel)
+                            <option value="{{ $value }}" {{ old('category') === $value ? 'selected' : '' }}>{{ $catLabel }}</option>
+                        @endforeach
                     </select>
-                </div>
-
-                <div>
-                    <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">สิทธิ์การใช้งาน (Role)</label>
-                    <select name="role" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] outline-none transition-all text-sm bg-white font-medium text-slate-700">
-                        <option value="USER">USER (นักศึกษาทั่วไป)</option>
-                        <option value="TEACHER">TEACHER (อาจารย์)</option>
-                    </select>
+                    <p id="categoryHint" class="text-[11px] text-slate-400 mt-1 ml-1">สาขาของสถานประกอบการที่นักศึกษาไปฝึก</p>
+                    @if($errors->create->has('category')) <p class="text-red-500 text-xs mt-1 ml-1">{{ $errors->create->first('category') }}</p> @endif
                 </div>
 
                 <div class="border-t border-slate-100 pt-4 mt-2">
                     <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">อีเมลเข้าระบบ <span class="text-red-500">*</span></label>
-                    <input name="email" type="email" required placeholder="example@kmutt.ac.th" value="{{ old('email') }}"
-                           class="w-full border {{ $errors->has('email') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }} px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm">
-                    @error('email') <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p> @enderror
+                    <input name="email" type="email" required placeholder="ชื่อ@mail.kmutt.ac.th" value="{{ old('email') }}"
+                           autocomplete="off" class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm {{ $errors->create->has('email') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                    @if($errors->create->has('email')) <p class="text-red-500 text-xs mt-1 ml-1">{{ $errors->create->first('email') }}</p> @endif
                 </div>
 
                 <div>
                     <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">รหัสผ่าน <span class="text-red-500">*</span></label>
-                    <input name="password" type="password" required placeholder="กำหนดรหัสผ่านอย่างน้อย 8 ตัวอักษร"
-                           class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] outline-none transition-all text-sm">
+                    <input name="password" type="password" required minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร"
+                           autocomplete="new-password" class="w-full border px-4 py-2.5 rounded-xl focus:ring-2 outline-none transition-all text-sm {{ $errors->create->has('password') ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'border-slate-200 focus:ring-[#F26522]/20 focus:border-[#F26522]' }}">
+                    @if($errors->create->has('password')) <p class="text-red-500 text-xs mt-1 ml-1">{{ $errors->create->first('password') }}</p> @endif
                 </div>
+
+                <p class="text-[11px] text-slate-400">บัญชีที่เพิ่มจากหน้านี้ยืนยันและอนุมัติให้แล้ว เจ้าของบัญชี login ได้ทันที</p>
 
             </div>
 
@@ -286,7 +314,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">รหัสนักศึกษา</label>
-                        <input id="editStudentId" name="student_id" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm">
+                        <input id="editStudentId" name="student_id" inputmode="numeric" maxlength="11" pattern="[0-9]{11}" title="รหัสนักศึกษาต้องเป็นตัวเลข 11 หลัก" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11)" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-slate-600 mb-1.5 ml-1">ปีการศึกษา</label>
@@ -456,8 +484,30 @@ window.onclick = e => {
     if (e.target.id === 'editModal') closeEditModal();
 };
 
-@if($errors->any())
-    // หน่วงเวลาเล็กน้อยให้หน้าจอโหลดเสร็จก่อนค่อยเด้ง Modal
+// ครูไม่มีรหัสนักศึกษาและสาขาวิชา ซ่อนและไม่บังคับ
+function syncCreateRole() {
+    const isStudent = document.getElementById('createRole').value === 'USER';
+    document.getElementById('studentOnly').classList.toggle('hidden', !isStudent);
+    document.getElementById('createStudentId').required = isStudent;
+    document.getElementById('createMajor').required = isStudent;
+    document.getElementById('categoryHint').textContent = isStudent
+        ? 'สาขาของสถานประกอบการที่นักศึกษาไปฝึก'
+        : 'ความเชี่ยวชาญของอาจารย์ ใช้จับคู่กับนักศึกษาสาขาเดียวกัน';
+}
+
+function updateIdCount() {
+    const n = document.getElementById('createStudentId').value.length;
+    const el = document.getElementById('createIdCount');
+    el.textContent = n + '/11';
+    el.className = 'text-[11px] ' + (n === 11 ? 'text-emerald-600' : 'text-slate-400');
+}
+
+syncCreateRole();
+updateIdCount();
+
+// เปิดหน้าต่างเพิ่มผู้ใช้ค้างไว้เฉพาะตอนที่ error มาจากการเพิ่มผู้ใช้
+// error จากการแก้ไขแสดงที่ด้านบนของหน้าแทน
+@if($errors->create->any())
     setTimeout(() => openCreateModal(), 100);
 @endif
 </script>

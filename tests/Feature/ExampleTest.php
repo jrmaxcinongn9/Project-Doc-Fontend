@@ -2,18 +2,21 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * หน้าแรกพาไปหน้า login ของนักศึกษา
+ * เทสเดิมจาก Laravel คาดว่าได้ 200 ซึ่งไม่ตรงกับแอปนี้ จึง fail มาตลอด
+ */
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_home_page_sends_visitors_to_the_student_login(): void
     {
-        $response = $this->get('/');
+        $this->get('/')->assertRedirect('/login/student');
+    }
 
-        $response->assertStatus(200);
+    public function test_the_student_login_page_opens(): void
+    {
+        $this->withoutVite()->get('/login/student')->assertOk();
     }
 }

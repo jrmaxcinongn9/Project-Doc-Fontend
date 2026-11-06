@@ -15,150 +15,139 @@ class StudentController extends Controller
         $this->apiUrl = config('services.api_url') ?? env('API_URL', 'https://project-doc-backend.onrender.com');
     }
 
+    /**
+     * รายการห้องเรียนของนักศึกษา แบบเดียวกับหน้าห้องเรียนของครู
+     *
+     * เดิมหน้านี้หาห้องจากสาขาวิชาและปีการศึกษาของนักศึกษา
+     * แต่ปีการศึกษาถูกเอาออกจากบัญชีนักศึกษาแล้ว (ข้อ 4 ของอาจารย์)
+     * จึงหาห้องไม่เจอ และรองรับได้ห้องเดียว
+     * ตอนนี้ใช้รายชื่อนักศึกษาในห้องจริง ผ่าน GET /classroom/my
+     */
     public function dashboard()
     {
-        $user = session('user');
         $token = session('api_token');
 
-        if (!$user || !$token) {
-            return redirect('/login')->withErrors('กรุณาเข้าสู่ระบบ');
+        if (!$token) {
+            return redirect('/login/student')->withErrors('กรุณาเข้าสู่ระบบ');
         }
 
-        $studentMajor = trim($user['major'] ?? '');
-        $studentYear = (string)($user['academicYear'] ?? '');
-        
-        $rawStudentId = $user['_id'] ?? $user['id'] ?? null;
-        $studentId = is_array($rawStudentId) ? ($rawStudentId['$oid'] ?? '') : (string)$rawStudentId;
-        $studentEmail = trim($user['email'] ?? ''); 
+        try {
+            $rooms = $this->myClassrooms($token);
+            $myFiles = $this->myFiles($token);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            return view('student.classrooms', ['classrooms' => []])
+                ->withErrors('เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณารีเฟรชอีกครั้ง');
+        }
+
+        $submittedIds = $myFiles->pluck('assignment_id')->map(fn ($v) => (string) $v)->unique();
+
+        $classrooms = $rooms->map(function ($r) use ($submittedIds) {
+            $assignments = collect($r['assignments'] ?? []);
+            $done = $assignments->filter(fn ($a) => $submittedIds->contains((string) $a['_id']))->count();
+
+            return (object) [
+                'id'           => (string) $r['_id'],
+                'name'         => $r['name'] ?? 'ไม่มีชื่อห้องเรียน',
+                'major'        => $r['major'] ?? '-',
+                'academicYear' => $r['academicYear'] ?? '-',
+                'teacher_name' => $r['teacher']['name'] ?? '-',
+                'total'        => $assignments->count(),
+                'submitted'    => $done,
+                'pending'      => $assignments->count() - $done,
+            ];
+        })->values();
+
+        return view('student.classrooms', compact('classrooms'));
+    }
+
+    /**
+     * ในห้องเรียน: รายการงาน ส่งงาน เพิ่มไฟล์ และลบไฟล์ที่ตัวเองส่ง
+     */
+    public function classroom(string $id)
+    {
+        $token = session('api_token');
+
+        if (!$token) {
+            return redirect('/login/student')->withErrors('กรุณาเข้าสู่ระบบ');
+        }
 
         try {
-            $resClass  = Http::withToken($token)->get($this->apiUrl . '/classroom');
-            $resUser   = Http::withToken($token)->get($this->apiUrl . '/user');
-            $resAssign = Http::withToken($token)->get($this->apiUrl . '/assignment');
-            $resFiles  = Http::withToken($token)->get($this->apiUrl . '/files'); 
+            $rooms = $this->myClassrooms($token);
+            $myFiles = $this->myFiles($token);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            return redirect('/student/dashboard')->withErrors('เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณาลองอีกครั้ง');
+        }
 
-            if (!$resClass->successful()) {
-                return back()->withErrors('ไม่สามารถดึงข้อมูลห้องเรียนได้');
-            }
+        // เปิดได้เฉพาะห้องที่ตัวเองอยู่ ห้องอื่นถือว่าไม่มี
+        $room = $rooms->first(fn ($r) => (string) $r['_id'] === $id);
+        abort_unless($room, 404);
 
-            $allClassrooms = collect($resClass->json());
-            $allUsers      = $resUser->successful() ? collect($resUser->json()) : collect([]);
-            $allAssigns    = $resAssign->successful() ? collect($resAssign->json()) : collect([]);
-            $allDocs       = $resFiles->successful() ? collect($resFiles->json()) : collect([]);
+        $teacherName = $room['teacher']['name'] ?? '-';
 
-            $myClassRaw = $allClassrooms->first(function ($c) use ($studentMajor, $studentYear) {
-                return trim($c['major'] ?? '') === $studentMajor &&
-                       (string)($c['academicYear'] ?? '') === $studentYear;
-            });
+        $classroom = (object) [
+            'id'           => (string) $room['_id'],
+            'name'         => $room['name'] ?? 'ไม่มีชื่อห้องเรียน',
+            'major'        => $room['major'] ?? '-',
+            'academicYear' => $room['academicYear'] ?? '-',
+            'teacher_name' => $teacherName,
+        ];
 
-            if (!$myClassRaw) {
-                return view('student.dashboard', [
-                    'classroom' => null,
-                    'assignments' => []
-                ])->withErrors('ยังไม่มีห้องเรียนสำหรับสาขาและปีการศึกษาของคุณ');
-            }
+        $assignments = collect($room['assignments'] ?? [])
+            ->map(function ($a) use ($myFiles, $teacherName) {
+                $assignmentId = (string) $a['_id'];
 
-            $teacherId = $myClassRaw['createdBy'] ?? null;
-            $teacher = $allUsers->first(function ($u) use ($teacherId) {
-                $id = $u['_id']['$oid'] ?? $u['_id'] ?? null;
-                return (string)$id === (string)$teacherId;
-            });
-            $teacherName = $teacher['name'] ?? 'SUTHANEE MALIPHAN';
+                // ไฟล์จาก /files/my เป็นของนักศึกษาคนนี้เท่านั้นอยู่แล้ว
+                $docs = $myFiles
+                    ->filter(fn ($d) => (string) ($d['assignment_id'] ?? '') === $assignmentId)
+                    ->sortBy(fn ($d) => $d['createdAt'] ?? '')
+                    ->values();
 
-            $classroomId = $myClassRaw['_id']['$oid'] ?? $myClassRaw['_id'] ?? null;
-            $classroom = (object) [
-                'id'           => $classroomId,
-                'name'         => $myClassRaw['name'] ?? 'ไม่มีชื่อห้องเรียน',
-                'major'        => $myClassRaw['major'] ?? '-',
-                'academicYear' => $myClassRaw['academicYear'] ?? '-',
-                'teacher_name' => $teacherName
-            ];
+                $due = !empty($a['due_date']) ? Carbon::parse($a['due_date']) : null;
 
-            // 🌟 ปรับปรุง: การ Map งานกับไฟล์หลายไฟล์
-            $mapAssignmentData = function ($assignRaw) use ($allDocs, $studentId, $studentEmail, $teacherName) {
-                $targetIdRaw = $assignRaw['_id'] ?? null;
-                $targetId = is_array($targetIdRaw) ? ($targetIdRaw['$oid'] ?? '') : (string)$targetIdRaw;
-
-                // 🔍 ค้นหาไฟล์ *ทั้งหมด* ที่นักศึกษาส่งในงานนี้
-                $myDocs = $allDocs->filter(function ($d) use ($targetId, $studentId, $studentEmail) {
-                    $docAssignId  = (string)($d['assignment_id'] ?? '');
-                    $docStudentId = (string)($d['uploaded_by_id'] ?? '');
-                    $docEmail     = (string)($d['uploaded_by_email'] ?? $d['uploaded_by'] ?? '');
-
-                    return $docAssignId === $targetId && 
-                           ($docStudentId === $studentId || ($studentEmail !== '' && $docEmail === $studentEmail));
-                })->values(); // Reset keys
-
-                // 📦 จัดรูป Array ของไฟล์ที่เคยส่งไปแล้ว เพื่อส่งให้ View
-                $submittedFiles = $myDocs->map(function($doc) {
-                    $fId = $doc['_id']['$oid'] ?? $doc['_id'] ?? null;
-                    return [
-                        'id' => $fId,
-                        'name' => $doc['original_name'] ?? $doc['file_name'] ?? 'ไม่มีชื่อไฟล์',
-                        // กำหนด URL สำหรับปุ่มดาวน์โหลด (ต้องตั้งชื่อ Route นี้ใน web.php)
-                        'download_url' => url('/student/files/download/' . $fId) 
-                    ];
-                })->toArray();
-
-                $dueDateStr = $assignRaw['due_date'] ?? null;
-                $publishDateStr = $assignRaw['publish_date'] ?? $assignRaw['created_at'] ?? null;
-                $dueDate = $dueDateStr ? \Carbon\Carbon::parse($dueDateStr) : null;
-                
                 $status = 'Not Submitted';
-                if ($myDocs->isNotEmpty()) {
-                    // เช็คไฟล์ล่าสุดเพื่อหาสถานะ Late/On Time
-                    $lastDoc = $myDocs->last();
-                    $submittedAtStr = $lastDoc['createdAt'] ?? $lastDoc['created_at'] ?? null;
-                    $submittedAt = $submittedAtStr ? \Carbon\Carbon::parse($submittedAtStr) : \Carbon\Carbon::now();
-                    
-                    if ($dueDate && $submittedAt->greaterThan($dueDate)) {
-                        $status = 'Late Submitted';
-                    } else {
-                        $status = 'Submitted';
-                    }
+                if ($docs->isNotEmpty()) {
+                    $last = $docs->last();
+                    $at = !empty($last['createdAt']) ? Carbon::parse($last['createdAt']) : Carbon::now();
+                    $status = ($due && $at->greaterThan($due)) ? 'Late Submitted' : 'Submitted';
                 }
 
                 return [
-                    'id'              => $targetId,
-                    'title'           => $assignRaw['assignment_name'] ?? 'ไม่มีชื่องาน',
-                    'teacher_name'    => $teacherName,
-                    'publish_date'    => $publishDateStr,
-                    'deadline'        => $dueDateStr,
-                    'status'          => $status,
-                    'submitted'       => $myDocs->isNotEmpty(),
-                    'files'           => $submittedFiles, // ส่ง Array ของไฟล์ไป
-                    'work_type'       => $assignRaw['work_type'] ?? 'Individual',
-                    'attachment_count'=> $assignRaw['attachment_count'] ?? 1,
+                    'id'               => $assignmentId,
+                    'title'            => $a['assignment_name'] ?? 'ไม่มีชื่องาน',
+                    'teacher_name'     => $teacherName,
+                    'publish_date'     => $a['publish_date'] ?? null,
+                    'deadline'         => $a['due_date'] ?? null,
+                    'status'           => $status,
+                    'submitted'        => $docs->isNotEmpty(),
+                    'files'            => $docs->map(fn ($d) => [
+                        'id'           => (string) $d['_id'],
+                        'name'         => $d['original_name'] ?? $d['file_name'] ?? 'ไม่มีชื่อไฟล์',
+                        'download_url' => url('/student/files/download/' . $d['_id']),
+                    ])->all(),
+                    'work_type'        => 'Individual',
+                    'attachment_count' => 1,
                 ];
-            };
+            })
+            ->values()
+            ->all();
 
-            $assignIdsInClass = $myClassRaw['assignments'] ?? [];
-            $assignments = collect($assignIdsInClass)
-                ->map(function ($aId) use ($allAssigns, $mapAssignmentData) {
-                    $idToFind = is_array($aId) ? ($aId['$oid'] ?? '') : (string)$aId;
-                    $found = $allAssigns->first(function($a) use ($idToFind) {
-                        $strId = is_array($a['_id']) ? ($a['_id']['$oid'] ?? '') : (string)$a['_id'];
-                        return $strId === $idToFind;
-                    });
-                    return $found ? $mapAssignmentData($found) : null;
-                })
-                ->filter()->values()->toArray();
+        return view('student.dashboard', compact('classroom', 'assignments'));
+    }
 
-            if (empty($assignments) && $classroomId) {
-                $assignments = $allAssigns
-                    ->filter(function($a) use ($classroomId) {
-                        $aClassId = is_array($a['classroom']) ? ($a['classroom']['$oid'] ?? '') : (string)$a['classroom'];
-                        return $aClassId === (string)$classroomId;
-                    })
-                    ->map(fn($assign) => $mapAssignmentData($assign))
-                    ->values()->toArray();
-            }
+    // ห้องเรียนที่นักศึกษาอยู่ API คืนเฉพาะข้อมูลที่นักศึกษาควรเห็น
+    private function myClassrooms(string $token)
+    {
+        $res = Http::withToken($token)->acceptJson()->timeout(60)->get($this->apiUrl . '/classroom/my');
 
-            return view('student.dashboard', compact('classroom', 'assignments'));
+        return $res->successful() ? collect($res->json()) : collect();
+    }
 
-        } catch (\Exception $e) {
-            return back()->withErrors('ระบบขัดข้อง: ' . $e->getMessage());
-        }
+    // ไฟล์ที่นักศึกษาคนนี้ส่ง เดิมดึงไฟล์ทั้งระบบมากรองเอง
+    private function myFiles(string $token)
+    {
+        $res = Http::withToken($token)->acceptJson()->timeout(60)->get($this->apiUrl . '/files/my');
+
+        return $res->successful() ? collect($res->json()) : collect();
     }
 
     /**
@@ -192,11 +181,13 @@ class StudentController extends Controller
                     ]);
 
                 if (!$response->successful()) {
-                    return back()->withErrors('อัปโหลดไฟล์บางส่วนไม่สำเร็จ: ' . $response->body());
+                    $msg = $response->json('message');
+                    $msg = is_array($msg) ? implode(' / ', $msg) : ($msg ?: 'อัปโหลดไม่สำเร็จ');
+
+                    return back()->withErrors('ส่งไฟล์ ' . $file->getClientOriginalName() . ' ไม่สำเร็จ: ' . $msg);
                 }
             }
 
-            sleep(1);
             return back()->with('success', 'อัปโหลดไฟล์งานสำเร็จ!');
 
         } catch (\Exception $e) {

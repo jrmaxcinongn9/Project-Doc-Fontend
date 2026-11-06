@@ -121,10 +121,19 @@ public function byAssignment($id)
         return (string)$assignId === (string)$id;
     });
 
+    // API คืนเฉพาะงานในห้องของครูคนนี้ ไม่เจอคือไม่ใช่งานของเขา หรือไม่มีงานนี้
+    abort_unless($currentAssignment, 404);
+
     // 3. หา Classroom ของงานนี้ เพื่อดูว่ามีนักเรียนคนไหนบ้าง
+    // GET /assignment populate classroom มาเป็น object ทั้งก้อน ไม่ใช่ id
+    // เดิมอ่านแค่ $oid จึงหาห้องไม่เจอ รายชื่อในห้องว่าง
+    // และตัวเลขทั้งหมดกี่คนไปนับนักศึกษาทุกคนในระบบแทน
     $classroomId = $currentAssignment['classroom'] ?? null;
     if (is_array($classroomId)) {
-        $classroomId = $classroomId['$oid'] ?? null;
+        $classroomId = $classroomId['_id'] ?? ($classroomId['$oid'] ?? null);
+        if (is_array($classroomId)) {
+            $classroomId = $classroomId['$oid'] ?? null;
+        }
     }
 
     $targetClassroom = $classrooms->first(function ($c) use ($classroomId) {
@@ -153,6 +162,9 @@ public function byAssignment($id)
                 'name' => $doc['original_name'] ?? 'ไม่มีชื่อ',
                 'file' => $doc['file_name'] ?? '',
                 'file_path' => $doc['file_path'] ?? null,
+                'mimetype' => $doc['mimetype'] ?? null,
+                // เปิดดูในเบราว์เซอร์ได้ไหม ชนิดอื่นต้องดาวน์โหลด
+                'previewable' => self::isPreviewable($doc['mimetype'] ?? null),
                 'size' => $doc['file_size'] ?? 0,
                 'user' => $doc['uploaded_by_name'] ?? '-',
                 'email' => $doc['uploaded_by_email'] ?? '-',
@@ -209,11 +221,51 @@ public function byAssignment($id)
             'feedback_by' => $row['feedback_by'] ?? null,
             // ส่งงานแล้วหรือยัง ดูจากไฟล์ที่อัปโหลดมาในงานชิ้นนี้
             'submitted'   => $email ? $documents->contains('email', $email) : false,
+            // ไฟล์ของคนนี้ ครูเปิดดูได้จากแถวให้คะแนนเลย ไม่ต้องเลื่อนขึ้นไปหาที่ตารางบน
+            'files'       => $email ? $documents->where('email', $email)->values() : collect(),
         ];
-    })->values();
+    });
+
+    // รายชื่อในงานถูกคัดลอกจากห้องครั้งเดียวตอนสร้างงาน
+    // นักศึกษาที่เข้าห้องทีหลังจึงไม่มีแถว ครูมองไม่เห็นและให้คะแนนไม่ได้
+    // เติมคนที่อยู่ในห้องแต่ยังไม่มีแถวเข้าไป API จะสร้างแถวให้ตอนบันทึก
+    $idOf = function ($v) {
+        if (is_array($v)) {
+            $v = $v['_id'] ?? ($v['$oid'] ?? null);
+            $v = is_array($v) ? ($v['$oid'] ?? null) : $v;
+        }
+        return $v === null ? null : (string) $v;
+    };
+
+    $existingIds = $gradeRows->pluck('student_id')->map(fn ($v) => (string) $v);
+
+    $missingRows = $studentIdsInClass
+        ->map($idOf)
+        ->filter()
+        ->unique()
+        ->reject(fn ($sid) => $existingIds->contains($sid))
+        ->map(function ($sid) use ($users, $documents, $idOf) {
+            $user = $users->first(fn ($u) => $idOf($u['_id'] ?? null) === $sid);
+            $email = $user['email'] ?? null;
+
+            return (object)[
+                'student_id'  => $sid,
+                'name'        => $user['name'] ?? '-',
+                'email'       => $email ?? '-',
+                'score'       => null,
+                'feedback'    => null,
+                'feedback_by' => null,
+                'submitted'   => $email ? $documents->contains('email', $email) : false,
+                'files'       => $email ? $documents->where('email', $email)->values() : collect(),
+            ];
+        });
+
+    $gradeRows = $gradeRows->concat($missingRows)->values();
 
     // 6. 🔥 เลือกหน้า View (Admin ไปหน้า admin / Teacher ไปหน้า teacher)
-    $viewPath = (session('user_role') === 'ADMIN') ? 'admin.assignment-documents' : 'teacher.assignment-view';
+    // เดิมเลือก view ด้วย session('user_role') ซึ่งไม่มีใครตั้งค่า จึงได้หน้าของครูเสมอ
+    // หน้าของครูมีครบทั้งให้คะแนน เปิดดูไฟล์ และบันทึกทั้งหมด ใช้หน้าเดียวกันทั้งครูและ admin
+    $viewPath = 'teacher.assignment-view';
 
     return view($viewPath, compact(
         'documents',
@@ -247,8 +299,7 @@ public function destroy($id)
         }
 
         // 🔍 ถ้าลบไม่สำเร็จ ให้ดึง Error จาก API มาโชว์
-        $apiError = $response->json()['message'] ?? $response->body() ?? 'Unknown Error';
-        return back()->withErrors("ลบไม่สำเร็จ ({$response->status()}): {$apiError}");
+        return back()->withErrors($this->apiError($response, 'ลบไม่สำเร็จ'));
 
     } catch (\Exception $e) {
         return back()->withErrors('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' . $e->getMessage());
@@ -285,7 +336,7 @@ public function upload(Request $request)
             ]);
 
         if (!$response->successful()) {
-            return back()->withErrors($response->body());
+            return back()->withErrors($this->apiError($response, 'อัปโหลดไม่สำเร็จ'));
         }
 
         return back()->with('success', 'อัปโหลดสำเร็จ');
@@ -294,6 +345,47 @@ public function upload(Request $request)
         return back()->withErrors($e->getMessage());
     }
 }
+// ชนิดเดียวกับที่ API ยอมให้เปิดแบบ inline ไม่มีสคริปต์ฝังอยู่
+private const PREVIEWABLE_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'text/plain'];
+
+public static function isPreviewable(?string $mimetype): bool
+{
+    if (!$mimetype) return false;
+
+    return in_array(strtolower(trim(explode(';', $mimetype)[0])), self::PREVIEWABLE_TYPES, true);
+}
+
+/**
+ * ครูเปิดดูไฟล์ที่นักศึกษาส่งในแท็บใหม่ ไม่ต้องดาวน์โหลดก่อน
+ * PDF รูปภาพ และข้อความเปิดในเบราว์เซอร์ได้ ชนิดอื่น API ส่งกลับมาเป็นดาวน์โหลด
+ */
+public function viewFile($id)
+{
+    $token = session('api_token');
+
+    if (!$token) {
+        return redirect('/login/teacher')->withErrors('กรุณาเข้าสู่ระบบใหม่');
+    }
+
+    try {
+        $response = Http::withToken($token)
+            ->timeout(60)
+            ->get($this->apiUrl . "/files/download/{$id}", ['inline' => 1]);
+
+        if (!$response->successful()) {
+            abort($response->status() === 404 ? 404 : 403, 'เปิดไฟล์ไม่ได้ ไฟล์อาจถูกลบไปแล้ว');
+        }
+
+        return response($response->body(), 200, [
+            'Content-Type'           => $response->header('Content-Type') ?: 'application/octet-stream',
+            'Content-Disposition'    => $response->header('Content-Disposition') ?: 'attachment',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        abort(503, 'เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณาลองอีกครั้ง');
+    }
+}
+
 public function downloadFile($id)
 {
     // ✅ ดึงให้ตรงกับที่เก็บใน AuthController
@@ -309,7 +401,8 @@ public function downloadFile($id)
     try {
         $response = Http::withToken($token)
             ->timeout(60)
-            ->get("http://localhost:3000/files/download/{$cleanId}");
+            // เดิมเขียน http://localhost:3000 ไว้ตายตัว บน Vercel จึงดาวน์โหลดไม่ได้เลย
+            ->get($this->apiUrl . "/files/download/{$cleanId}");
 
         if ($response->successful()) {
             return response($response->body(), 200, [
@@ -318,7 +411,7 @@ public function downloadFile($id)
             ]);
         }
 
-        return back()->withErrors(['api_error' => 'API ปฏิเสธการดาวน์โหลด (401/404): ' . $response->body()]);
+        return back()->withErrors(['api_error' => $this->apiError($response, 'ดาวน์โหลดไม่สำเร็จ')]);
 
     } catch (\Exception $e) {
         return back()->withErrors(['api_error' => 'การเชื่อมต่อล้มเหลว: ' . $e->getMessage()]);

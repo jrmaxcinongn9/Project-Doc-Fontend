@@ -26,8 +26,13 @@
         {{-- 🌟 ส่วน Topbar / Header 🌟 --}}
         <div class="flex justify-between items-start px-6 md:px-10 py-6">
             <div>
+                <a href="/student/dashboard" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#FA4616] mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    ห้องเรียนของฉัน
+                </a>
                 @if($classroom)
                     <h1 class="text-[22px] font-bold text-[#3f4b5b]">ห้องเรียน: {{ $classroom->name }} ({{ $classroom->major }})</h1>
+                    <p class="text-sm text-slate-500 mt-1">อาจารย์ {{ $classroom->teacher_name }}</p>
                 @else
                     <h1 class="text-[22px] font-bold text-[#3f4b5b]">ยังไม่พบห้องเรียน</h1>
                 @endif
@@ -35,18 +40,22 @@
 
             <a href="{{ url('/student/profile') }}" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
                 <div class="text-right">
-                    <div class="text-sm font-semibold text-[#3f4b5b]">{{ Auth::user()->name ?? 'student1' }}</div>
+                    <div class="text-sm font-semibold text-[#3f4b5b]">{{ session('user.name') ?? 'นักศึกษา' }}</div>
                     <div class="text-xs text-gray-500">โปรไฟล์</div>
                 </div>
-                <div class="w-10 h-10 rounded-full bg-[#e2e8f0] flex items-center justify-center text-gray-500 shadow-sm border border-gray-200">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                </div>
+                <x-avatar />
             </a>
         </div>
 
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+    {{-- เดิมหน้านี้ไม่แสดงผลการส่งงานเลย ส่งไม่ผ่านก็ไม่มีอะไรบอก --}}
+    @if (session('success'))
+        <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>
+    @endif
 
     @if ($classroom)
 
@@ -470,6 +479,10 @@
     }
 
     function closeSubmitModal() {
+        if (window.filesChanged) {
+            window.location.reload();
+            return;
+        }
         const modal = document.getElementById('submitModal');
         const modalContent = document.getElementById('modalContent');
         
@@ -511,6 +524,8 @@
 
                 const data = await response.json();
                 if(data.success) {
+                    // สถานะในตารางยังเป็นของเดิม ปิดหน้าต่างแล้วโหลดใหม่ให้ตรง
+                    window.filesChanged = true;
                     fileItem.remove();
                     if(document.getElementById('fileListContainer').children.length === 0) {
                         document.getElementById('previousFileSection').classList.add('hidden');

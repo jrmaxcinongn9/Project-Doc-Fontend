@@ -17,23 +17,14 @@
             <!-- Avatar -->
             <div class="flex flex-col items-center mb-6">
 
-                <div class="bg-gray-200 rounded-full p-4 w-28 h-28 flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-16 h-16 text-gray-600"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                            d="M15.75 7.5A3.75 3.75 0 1112 3.75a3.75 3.75 0 013.75 3.75z
-                            M6 20.25v-.75A6.75 6.75 0 0112.75 12h.5
-                            A6.75 6.75 0 0120 19.5v.75H6z" />
-                    </svg>
-                </div>
+                <x-avatar-uploader />
 
                 <h2 class="text-xl font-semibold text-gray-800">
-                    {{ session('user.name') ?? 'Teacher User' }}
+                    {{ session('user.name') ?? '-' }}
                 </h2>
 
                 <p class="text-gray-500 text-sm">
-                    {{ session('user.email') ?? 'example@gmail.com' }}
+                    {{ session('user.email') ?? '-' }}
                 </p>
 
                 <span class="mt-2 px-3 py-1 text-xs rounded-full 

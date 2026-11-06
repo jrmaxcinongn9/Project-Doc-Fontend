@@ -8,17 +8,18 @@
     </div>
 
     <div class="p-4 flex-1 overflow-y-auto">
+        <x-notification-bell />
         <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 mt-2">Menu</p>
         <ul class="space-y-1.5">
             <li>
                 <a href="/student/dashboard"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                          {{ request()->is('student/dashboard') 
+                          {{ request()->is('student/dashboard', 'student/classrooms*') 
                              ? 'bg-orange-50 text-[#F26522] font-semibold' 
                              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium' }}">
                     
                     <svg xmlns="http://www.w3.org/2000/svg" 
-                         class="w-5 h-5 transition-colors {{ request()->is('student/dashboard') ? 'text-[#F26522]' : 'text-slate-400' }}" 
+                         class="w-5 h-5 transition-colors {{ request()->is('student/dashboard', 'student/classrooms*') ? 'text-[#F26522]' : 'text-slate-400' }}" 
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" 
                               d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z" />

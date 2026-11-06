@@ -83,7 +83,10 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.25 2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V7.5m-5.25-5.25L19.5 7.5m-5.25-5.25V7.5h5.25M12 10.5v6m0 0l-2.25-2.25M12 16.5l2.25-2.25" />
                                             </svg>
 
-                                            <a href="/teacher/download/{{ $doc->id }}" class="text-[#FA4616] text-sm font-semibold hover:text-[#D83A0D] hover:underline truncate max-w-[200px]">
+                                            <a href="{{ !empty($doc->previewable) ? '/teacher/view/' . $doc->id : '/teacher/download/' . $doc->id }}"
+                                               @if(!empty($doc->previewable)) target="_blank" rel="noopener" @endif
+                                               title="{{ !empty($doc->previewable) ? 'เปิดดูในแท็บใหม่' : 'ไฟล์ชนิดนี้เปิดในเบราว์เซอร์ไม่ได้ ต้องดาวน์โหลด' }}"
+                                               class="text-[#FA4616] text-sm font-semibold hover:text-[#D83A0D] hover:underline truncate max-w-[200px]">
                                                 {{ $doc->name ?? 'ดาวน์โหลดไฟล์' }}
                                             </a>
                                         </div>
@@ -106,6 +109,14 @@
                                 <td class="p-5 text-right">
                                     <div class="inline-flex items-center justify-end">
                                         @if(!empty($doc->file))
+                                            {{-- เปิดดูได้เฉพาะ PDF รูปภาพ และข้อความ ไฟล์ Word หรือ PowerPoint ต้องดาวน์โหลด --}}
+                                            @if(!empty($doc->previewable))
+                                            <a href="/teacher/view/{{ $doc->id }}" target="_blank" rel="noopener"
+                                               class="mr-2 px-3 py-1.5 rounded-lg bg-[#FA4616] text-white shadow-sm hover:bg-[#D83A0D] transition-all font-semibold text-sm flex items-center gap-1.5">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+                                                เปิดดู
+                                            </a>
+                                            @endif
                                             <a href="/teacher/download/{{ $doc->id }}"
                                                class="px-3 py-1.5 rounded-lg bg-white text-[#FA4616] border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-[#FA4616]/40 hover:shadow transition-all font-semibold text-sm flex items-center gap-1.5">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -154,11 +165,35 @@
                         @if($maxScore)
                             คะแนนเต็มของงานชิ้นนี้ {{ $maxScore }} คะแนน
                         @else
-                            งานชิ้นนี้ยังไม่ได้ตั้งคะแนนเต็ม ให้ความเห็นได้ แต่ยังใส่คะแนนไม่ได้
+                            งานชิ้นนี้ยังไม่ได้ตั้งคะแนนเต็ม ตั้งที่ช่องด้านขวาก่อนจึงจะใส่คะแนนได้
                         @endif
                     </p>
                 </div>
+
+                <form method="POST" action="/teacher/assignment/{{ $assignmentId }}/max-score"
+                      class="flex items-end gap-2">
+                    @csrf
+                    @method('PATCH')
+                    <div>
+                        <label class="block text-[12px] text-slate-500 mb-1">
+                            {{ $maxScore ? 'แก้คะแนนเต็ม' : 'ตั้งคะแนนเต็ม' }}
+                        </label>
+                        <input type="number" name="max_score" min="1" max="1000" required
+                               value="{{ old('max_score', $maxScore) }}"
+                               class="w-24 border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522]">
+                    </div>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl border border-[#F26522] text-[#F26522] hover:bg-[#F26522] hover:text-white text-sm font-semibold transition-colors">
+                        บันทึก
+                    </button>
+                </form>
             </div>
+
+            @if($errors->has('max_score'))
+            <div class="mb-5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+                {{ $errors->first('max_score') }}
+            </div>
+            @endif
 
             @if(session('success'))
             <div class="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-sm">
@@ -173,12 +208,19 @@
             @endif
 
             <div class="space-y-3">
+                {{-- ฟอร์มเดียวครอบทุกแถว กดบันทึกครั้งเดียวได้ทุกคน
+                     เดิมแต่ละคนเป็นฟอร์มแยก กดบันทึกแถวหนึ่ง หน้าโหลดใหม่ คะแนนที่กรอกในแถวอื่นหายหมด --}}
+                <form id="gradeAllForm" method="POST" action="/teacher/assignment/{{ $assignmentId }}/grades" class="space-y-3">
+                @csrf
+                @method('PATCH')
+
                 @forelse($gradeRows ?? [] as $row)
-                <form method="POST"
-                      action="/teacher/assignment/{{ $assignmentId }}/students/{{ $row->student_id }}/grade"
-                      class="border border-slate-150 rounded-2xl p-4 hover:bg-slate-50/50 transition-colors">
-                    @csrf
-                    @method('PATCH')
+                <div class="grade-row border border-slate-150 rounded-2xl p-4 hover:bg-slate-50/50 transition-colors"
+                     data-student="{{ $row->student_id }}">
+
+                    {{-- ค่าเดิม ใช้เทียบว่าแถวไหนถูกแก้ จะได้ส่งเฉพาะแถวนั้น --}}
+                    <input type="hidden" name="rows[{{ $row->student_id }}][orig_score]" value="{{ $row->score }}">
+                    <input type="hidden" name="rows[{{ $row->student_id }}][orig_feedback]" value="{{ $row->feedback }}">
 
                     <div class="flex flex-wrap items-start gap-4">
 
@@ -187,6 +229,17 @@
                             <div class="text-xs text-slate-500">{{ $row->email }}</div>
                             @if($row->submitted)
                                 <span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-semibold">ส่งแล้ว</span>
+                                {{-- เปิดไฟล์ของคนนี้ได้จากแถวให้คะแนนเลย --}}
+                                <div class="mt-2 space-y-1">
+                                    @foreach($row->files ?? [] as $f)
+                                        <a href="{{ !empty($f->previewable) ? '/teacher/view/' . $f->id : '/teacher/download/' . $f->id }}"
+                                           @if(!empty($f->previewable)) target="_blank" rel="noopener" @endif
+                                           class="flex items-center gap-1.5 text-xs text-[#FA4616] hover:underline max-w-[220px]">
+                                            <span class="shrink-0">{{ !empty($f->previewable) ? 'เปิดดู' : 'ดาวน์โหลด' }}:</span>
+                                            <span class="truncate">{{ $f->name }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
                             @else
                                 <span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[11px] font-semibold">ยังไม่ส่ง</span>
                             @endif
@@ -194,37 +247,76 @@
 
                         <div class="w-28">
                             <label class="block text-[12px] text-slate-500 mb-1">คะแนน</label>
-                            <input type="number" name="score" min="0"
+                            <input type="number" name="rows[{{ $row->student_id }}][score]" min="0"
                                    @if($maxScore) max="{{ $maxScore }}" @else disabled @endif
-                                   value="{{ $row->score }}"
+                                   value="{{ old('rows.' . $row->student_id . '.score', $row->score) }}"
                                    placeholder="{{ $maxScore ? '0-' . $maxScore : 'ยังไม่มี' }}"
-                                   class="w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] disabled:bg-slate-100 disabled:text-slate-400">
+                                   class="grade-input w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522] disabled:bg-slate-100 disabled:text-slate-400">
                         </div>
 
                         <div class="flex-[2] min-w-[240px]">
                             <label class="block text-[12px] text-slate-500 mb-1">ความเห็นถึงนักศึกษา</label>
-                            <textarea name="feedback" rows="2"
-                                      class="w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522]">{{ $row->feedback }}</textarea>
-                        </div>
-
-                        <div class="pt-6">
-                            <button type="submit"
-                                    class="px-5 py-2.5 rounded-xl bg-[#F26522] hover:bg-[#d8561b] text-white text-sm font-semibold transition-colors">
-                                บันทึก
-                            </button>
+                            <textarea name="rows[{{ $row->student_id }}][feedback]" rows="2"
+                                      class="grade-input w-full border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#F26522]/20 focus:border-[#F26522]">{{ old('rows.' . $row->student_id . '.feedback', $row->feedback) }}</textarea>
                         </div>
 
                     </div>
 
-                    @if($row->feedback_by)
-                    <div class="text-[11px] text-slate-400 mt-2">ให้โดย {{ $row->feedback_by }}</div>
-                    @endif
-                </form>
+                    <div class="flex justify-between mt-2 text-[11px]">
+                        <span class="text-slate-400">@if($row->feedback_by) ให้โดย {{ $row->feedback_by }} @endif</span>
+                        <span class="row-dirty hidden font-semibold text-amber-600">ยังไม่ได้บันทึก</span>
+                    </div>
+                </div>
                 @empty
                 <div class="text-center text-slate-400 text-sm py-10">
                     ยังไม่มีรายชื่อนักศึกษาในงานชิ้นนี้
                 </div>
                 @endforelse
+
+                @if(count($gradeRows ?? []))
+                <div class="sticky bottom-4 flex items-center justify-end gap-3 bg-white/90 backdrop-blur border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
+                    <span id="dirtyCount" class="text-sm text-slate-500">ยังไม่มีการแก้ไข</span>
+                    <button type="submit" id="saveAllBtn"
+                            class="px-6 py-2.5 rounded-xl bg-[#F26522] hover:bg-[#d8561b] text-white text-sm font-semibold transition-colors disabled:opacity-50">
+                        บันทึกทั้งหมด
+                    </button>
+                </div>
+                @endif
+                </form>
+
+                <script>
+                (function () {
+                    const form = document.getElementById('gradeAllForm');
+                    if (!form) return;
+                    let saving = false;
+
+                    // แถวที่ค่าไม่ตรงกับค่าเดิม
+                    function dirtyRows() {
+                        return [...form.querySelectorAll('.grade-row')].filter(function (row) {
+                            const sid = row.dataset.student;
+                            const get = n => (form.querySelector('[name="rows[' + sid + '][' + n + ']"]') || {}).value ?? '';
+                            return get('score') !== get('orig_score') || get('feedback') !== get('orig_feedback');
+                        });
+                    }
+
+                    function refresh() {
+                        const dirty = dirtyRows();
+                        form.querySelectorAll('.grade-row').forEach(r => r.querySelector('.row-dirty').classList.toggle('hidden', !dirty.includes(r)));
+                        document.getElementById('dirtyCount').textContent =
+                            dirty.length ? 'แก้ไขแล้ว ' + dirty.length + ' คน ยังไม่ได้บันทึก' : 'ยังไม่มีการแก้ไข';
+                    }
+
+                    form.addEventListener('input', refresh);
+                    form.addEventListener('submit', function () { saving = true; });
+
+                    // เตือนก่อนออกจากหน้า ถ้ายังมีคะแนนที่ไม่ได้บันทึก
+                    window.addEventListener('beforeunload', function (e) {
+                        if (!saving && dirtyRows().length) { e.preventDefault(); e.returnValue = ''; }
+                    });
+
+                    refresh();
+                })();
+                </script>
             </div>
 
         </div>

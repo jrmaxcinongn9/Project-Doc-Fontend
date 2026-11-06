@@ -8,6 +8,7 @@
     </div>
 
     <div class="p-4 flex-1 overflow-y-auto">
+        <x-notification-bell />
         <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 mt-2">Teacher Menu</p>
         <ul class="space-y-1.5">
             

@@ -146,7 +146,7 @@ $assignments = collect($classData['assignments'] ?? [])
 
             return $response->successful() 
                 ? back()->with('success', 'สร้างห้องเรียนสำเร็จ') 
-                : back()->withInput()->withErrors('สร้างไม่สำเร็จ: ' . $response->body());
+                : back()->withInput()->withErrors($this->apiError($response, 'สร้างไม่สำเร็จ'));
         } catch (\Exception $e) {
             return back()->withInput()->withErrors($e->getMessage());
         }
@@ -206,7 +206,8 @@ $assignments = collect($classData['assignments'] ?? [])
     $token = session('api_token');
 
     try {
-        $payload = ['assignment_name' => $request->assignment_name];
+        // ชื่องานว่างไม่ส่ง ไม่อย่างนั้น API จะลบชื่องานเดิมทิ้ง
+        $payload = $request->filled('assignment_name') ? ['assignment_name' => $request->assignment_name] : [];
 
         // ตั้งคะแนนเต็มทีหลังได้ งานเก่าที่ไม่มีค่านี้จึงยังแก้ให้ให้คะแนนได้
         if ($request->filled('max_score')) {
@@ -229,7 +230,7 @@ $assignments = collect($classData['assignments'] ?? [])
 
             return response()->json([
                 'success' => false,
-                'message' => $response->body()
+                'message' => $this->apiError($response, 'แก้ไขไม่สำเร็จ')
             ], 400);
         }
 
@@ -238,7 +239,7 @@ $assignments = collect($classData['assignments'] ?? [])
             return back()->with('success', 'แก้ไขงานสำเร็จ');
         }
 
-        return back()->withErrors('แก้ไขไม่สำเร็จ: ' . $response->body());
+        return back()->withErrors($this->apiError($response, 'แก้ไขไม่สำเร็จ'));
 
     } catch (\Exception $e) {
 
@@ -267,7 +268,7 @@ public function destroyAssignment($id)
             return back()->with('success', 'ลบงานสำเร็จ');
         }
 
-        return back()->withErrors('ลบไม่สำเร็จ: ' . $response->body());
+        return back()->withErrors($this->apiError($response, 'ลบไม่สำเร็จ'));
 
     } catch (\Exception $e) {
         return back()->withErrors($e->getMessage());
@@ -342,7 +343,7 @@ public function destroy($id)
             return back()->with('success', 'ลบห้องเรียนสำเร็จ');
         }
 
-        return back()->withErrors('ลบไม่สำเร็จ: ' . $response->body());
+        return back()->withErrors($this->apiError($response, 'ลบไม่สำเร็จ'));
 
     } catch (\Exception $e) {
         return back()->withErrors($e->getMessage());

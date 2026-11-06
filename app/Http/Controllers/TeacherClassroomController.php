@@ -96,6 +96,9 @@ class TeacherClassroomController extends Controller
 
         try {
             $resClass = Http::withToken($token)->get($this->apiUrl . '/classroom/' . $id);
+
+            // ครูเปิดได้เฉพาะห้องของตัวเอง API ตอบ 403 ถ้าเป็นห้องของครูคนอื่น
+            abort_if(in_array($resClass->status(), [403, 404], true), 404);
             $resUser = Http::withToken($token)->get($this->apiUrl . '/user');
             
             $resAssign = Http::withToken($token)->get($this->apiUrl . '/assignment');
@@ -175,6 +178,9 @@ class TeacherClassroomController extends Controller
 
             return back()->withErrors('ไม่พบข้อมูลห้องเรียน');
 
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            // ให้ 404 ของห้องคนอื่นออกไปถึงผู้ใช้ ไม่ถูกกลืนเป็น "ระบบขัดข้อง"
+            throw $e;
         } catch (\Exception $e) {
             return back()->withErrors('ระบบขัดข้อง: ' . $e->getMessage());
         }
@@ -258,10 +264,15 @@ class TeacherClassroomController extends Controller
                 ? \Carbon\Carbon::parse($request->due_date, 'Asia/Bangkok')->setTimezone('UTC')->toIso8601String() 
                 : null;
 
-            $payload = [
-                'assignment_name' => $request->assignment_name,
-                'due_date'        => $dueDateFormatted,
-            ];
+            // ส่งเฉพาะช่องที่ฟอร์มส่งมาจริง
+            // เดิมส่ง assignment_name และ due_date เป็น null เสมอถ้าไม่ได้กรอก API จึงลบชื่องานและวันส่งทิ้ง
+            $payload = [];
+            if ($request->filled('assignment_name')) {
+                $payload['assignment_name'] = $request->assignment_name;
+            }
+            if ($request->has('due_date')) {
+                $payload['due_date'] = $dueDateFormatted;
+            }
 
             // ตั้งคะแนนเต็มทีหลังได้ด้วย งานเก่าที่สร้างก่อนมีฟิลด์นี้จึงยังแก้ได้
             if ($request->filled('max_score')) {
@@ -277,14 +288,14 @@ class TeacherClassroomController extends Controller
                 if ($response->successful()) {
                     return response()->json(['success' => true, 'message' => 'แก้ไขสำเร็จ']);
                 }
-                return response()->json(['success' => false, 'message' => $response->body()], 400);
+                return response()->json(['success' => false, 'message' => $this->apiError($response, 'แก้ไขไม่สำเร็จ')], 400);
             }
 
             if ($response->successful()) {
                 return back()->with('success', 'แก้ไขงานสำเร็จ');
             }
 
-            return back()->withErrors('แก้ไขไม่สำเร็จ: ' . $response->body());
+            return back()->withErrors($this->apiError($response, 'แก้ไขไม่สำเร็จ'));
 
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
@@ -311,7 +322,7 @@ class TeacherClassroomController extends Controller
                 return back()->with('success', 'ลบงานสำเร็จ');
             }
 
-            return back()->withErrors('ลบไม่สำเร็จ: ' . $response->body());
+            return back()->withErrors($this->apiError($response, 'ลบไม่สำเร็จ'));
 
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
@@ -361,7 +372,7 @@ class TeacherClassroomController extends Controller
                 return redirect('/teacher/classroom')->with('success', 'ลบห้องเรียนสำเร็จ');
             }
 
-            return back()->withErrors('ลบไม่สำเร็จ: ' . $response->body());
+            return back()->withErrors($this->apiError($response, 'ลบไม่สำเร็จ'));
 
         } catch (\Exception $e) {
             return back()->withErrors('เกิดข้อผิดพลาด: ' . $e->getMessage());
@@ -386,7 +397,7 @@ class TeacherClassroomController extends Controller
                 return back()->with('success', 'อัปเดตข้อมูลห้องเรียนสำเร็จ');
             }
 
-            return back()->withErrors('อัปเดตไม่สำเร็จ: ' . $response->body());
+            return back()->withErrors($this->apiError($response, 'อัปเดตไม่สำเร็จ'));
 
         } catch (\Exception $e) {
             return back()->withErrors('เกิดข้อผิดพลาด: ' . $e->getMessage());

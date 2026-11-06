@@ -68,7 +68,7 @@
                         <td class="p-3 text-sm text-gray-600">{{ $s['major'] ?? '-' }}</td>
                         <td class="p-3">{{ $s['email'] ?? '-' }}</td>
                         <td class="p-3 text-right">
-                            <a href="/teacher/detail" class="text-blue-600 text-sm hover:underline">
+                            <a href="/teacher/students/{{ $s['id'] }}" class="text-blue-600 text-sm hover:underline">
                                 ดูรายละเอียด
                             </a>
                         </td>

@@ -39,6 +39,15 @@ Route::get('/login/admin',   fn() => view('auth.admin-login'));
 
 Route::post('/login',  [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// แจ้งเตือนในเว็บ ทุกบทบาทใช้ร่วมกัน ข้อมูลที่ได้ขึ้นกับบทบาทใน session
+// รูปโปรไฟล์ของตัวเอง ทุกบทบาท
+Route::get('/profile/avatar', [\App\Http\Controllers\ProfileAvatarController::class, 'show'])->name('profile.avatar');
+Route::post('/profile/avatar', [\App\Http\Controllers\ProfileAvatarController::class, 'store'])->name('profile.avatar.store');
+Route::delete('/profile/avatar', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
+
+Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications');
+Route::post('/notifications/seen', [\App\Http\Controllers\NotificationController::class, 'seen'])->name('notifications.seen');
 Route::get('/register', fn() => view('auth.register'));
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::get('/verify-email', [VerifyEmailController::class, 'verify'])->name('verify.email');
@@ -72,6 +81,8 @@ Route::group(['middleware' => function ($request, $next) {
 }], function () {
 
 Route::get('/student/dashboard', [StudentController::class, 'dashboard']);
+// ในห้องเรียน: นักศึกษาเห็นงานแบบเดียวกับครู แต่ทำได้แค่ส่งงาน เพิ่มไฟล์ และลบไฟล์ของตัวเอง
+Route::get('/student/classrooms/{id}', [StudentController::class, 'classroom'])->name('student.classroom');
 Route::get('/student/profile', fn() => view('student.profile'));
 
 // นักศึกษาดูคะแนนและความเห็นของตัวเอง
@@ -79,12 +90,14 @@ Route::get('/student/profile', fn() => view('student.profile'));
 Route::get('/student/scores', [StudentScoreController::class, 'index'])->name('student.scores');
 Route::post('/student/assignment/submit', [StudentController::class, 'submitAssignment'])->name('student.assignment.submit');
 Route::get('/student/file/download/{id}', [StudentController::class, 'downloadFile'])->name('student.file.download');
-});
+
 // โหลดไฟล์
+// ย้ายเข้ามาในกลุ่มนักศึกษา เดิมอยู่นอกกลุ่ม ใครที่ไม่ได้ login ก็เรียกเส้นนี้ได้
 Route::get('/student/files/download/{id}', [StudentController::class, 'downloadFile'])->name('student.assignment.download');
 
-// ลบไฟล์ (เพิ่มอันนี้เข้าไป)
+// ลบไฟล์ API อนุญาตให้นักศึกษาลบได้เฉพาะไฟล์ที่ตัวเองส่ง
 Route::delete('/student/files/delete/{id}', [StudentController::class, 'deleteFile'])->name('student.assignment.deleteFile');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -114,13 +127,19 @@ Route::group(['middleware' => function ($request, $next) {
     // 2. เพิ่ม Route สำหรับดูรายละเอียด (Show) และสร้าง (Store)
     Route::post('/teacher/classroom', [TeacherClassroomController::class, 'store']);
     Route::get('/teacher/classroom/{id}', [TeacherClassroomController::class, 'show']);
+    // ส่งออกคะแนนทั้งห้องเป็น Excel
+    Route::get('/teacher/classroom/{id}/export', [\App\Http\Controllers\ScoreExportController::class, 'classroom'])->name('teacher.classroom.export');
 
     // --- (Route อื่นๆ ของคุณคงไว้เหมือนเดิม) ---
-    Route::get('/teacher/review', fn() => view('teacher.review-documents'));
+    // หน้า review, work, edit เดิมเป็นข้อมูลตัวอย่าง (Week 1-3 ปี 2025) ไม่ได้ดึงจากฐานข้อมูล
+    // งานจริงอยู่ในหน้าห้องเรียน จึงพาไปที่นั่นแทน
+    Route::get('/teacher/review', fn() => redirect('/teacher/classroom'));
     // เดิมหน้านี้เป็นข้อมูลปลอมที่เขียนไว้ใน view ครูทุกคนเห็นชุดเดียวกัน
     Route::get('/teacher/students', [TeacherStudentController::class, 'index'])->name('teacher.students');
-    Route::get('/teacher/detail', fn() => view('teacher.student-detail'));
-    Route::get('/teacher/work', fn() => view('teacher.work-files'));
+    // หน้ารายละเอียดนักศึกษาจริงต่อคน เส้นเก่า /teacher/detail เป็นข้อมูลตัวอย่าง พากลับไปเลือกนักศึกษา
+    Route::get('/teacher/students/{id}', [TeacherStudentController::class, 'show'])->name('teacher.student.show');
+    Route::get('/teacher/detail', fn() => redirect('/teacher/students'));
+    Route::get('/teacher/work', fn() => redirect('/teacher/classroom'));
     // ดึงหน้าดูรายละเอียดงาน (Assignment View)
 
 Route::post('/teacher/classroom/{id}/assignment',
@@ -135,18 +154,30 @@ Route::put('/teacher/assignment/{id}', [TeacherClassroomController::class, 'upda
 Route::delete('/teacher/assignment/{id}', [TeacherClassroomController::class, 'destroyAssignment']);
     
     Route::get('/teacher/profile', fn() => view('teacher.profile'));
-    Route::get('/teacher/edit', fn() => view('teacher.edit'));
+    Route::get('/teacher/edit', fn() => redirect('/teacher/classroom'));
 
     // Route สำหรับอาจารย์ดูรายละเอียดงาน
 Route::get('/teacher/assignment-view/{id}', [DocumentController::class, 'byAssignment']);
 
 // Route สำหรับอาจารย์ดาวน์โหลดไฟล์ (ใช้ฟังก์ชันเดิมใน DocumentController ได้เลย)
 Route::get('/teacher/download/{id}', [DocumentController::class, 'downloadFile']);
+// เปิดดูไฟล์ที่นักศึกษาส่งในเบราว์เซอร์
+Route::get('/teacher/view/{id}', fn (string $id) => view('teacher.file-viewer', ['id' => $id]))->name('teacher.file.view');
+// ตัวไฟล์จริงที่หน้าเปิดดูโหลดไปแสดง
+Route::get('/teacher/view/{id}/raw', [DocumentController::class, 'viewFile'])->name('teacher.file.raw');
 
 // ครูให้คะแนนและเขียน feedback รายคน
 // เดิมฟิลด์พวกนี้มีในฐานข้อมูลแต่ไม่มีหน้าจอไหนเขียนลงไปได้
 Route::patch('/teacher/assignment/{assignmentId}/students/{studentId}/grade',
     [TeacherGradeController::class, 'store'])->name('teacher.grade');
+
+// บันทึกคะแนนของทุกคนในงานชิ้นนี้พร้อมกัน
+Route::patch('/teacher/assignment/{assignmentId}/grades',
+    [TeacherGradeController::class, 'storeMany'])->name('teacher.grades');
+
+// ตั้งคะแนนเต็มจากหน้าให้คะแนน งานเก่าที่ไม่มีคะแนนเต็มจะได้ให้คะแนนได้
+Route::patch('/teacher/assignment/{assignmentId}/max-score',
+    [TeacherGradeController::class, 'setMaxScore'])->name('teacher.maxScore');
 });
 /*
 |--------------------------------------------------------------------------
@@ -173,7 +204,8 @@ Route::group(['middleware' => function ($request, $next) {
     // เดิมหน้านี้ใช้ controller เดียวกับหน้าจัดการผู้ใช้ และนับได้แค่สองตัวเลข
     // ส่วนช่องเอกสารกับงานฝึกเขียนเลขศูนย์ตายตัวไว้ในโค้ด
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/internship', fn() => view('admin.manage-internship'));
+    // หน้าเดิมไม่มีข้อมูลส่งเข้า view เปิดแล้ว error งานจริงจัดการที่หน้าห้องเรียน
+    Route::get('/admin/internship', fn() => redirect('/admin/classroom'));
 
     // =========================
     // CLASSROOM
@@ -216,6 +248,7 @@ Route::group(['middleware' => function ($request, $next) {
     // ฝั่ง API มีเส้นยืนยันอีเมลและอนุมัติอยู่แล้ว แต่หน้าเว็บไม่มีปุ่มเรียกเลย
     // ด่านอนุมัติจึงใช้งานจริงไม่ได้ ต้องยิงคำสั่งจาก terminal เอง
     Route::get('/admin/pending', [AdminApprovalController::class, 'index'])->name('pending.index');
+    Route::post('/admin/pending/bulk', [AdminApprovalController::class, 'bulk'])->name('pending.bulk');
     Route::patch('/admin/pending/{id}/verify-email', [AdminApprovalController::class, 'verifyEmail'])->name('pending.verifyEmail');
     Route::post('/admin/pending/{id}/resend-verify', [AdminApprovalController::class, 'resendVerify'])->name('pending.resendVerify');
     Route::patch('/admin/pending/{id}/approve', [AdminApprovalController::class, 'approve'])->name('pending.approve');
