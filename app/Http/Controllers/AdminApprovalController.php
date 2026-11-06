@@ -148,7 +148,7 @@ class AdminApprovalController extends Controller
             }
 
             return back()
-                ->with('success', 'สร้างลิงก์ยืนยันใหม่แล้ว ลิงก์เดิมใช้ไม่ได้อีก')
+                ->with('success', 'ส่งลิงก์ยืนยันอีกครั้งแล้ว')
                 ->with('verify_link', $response->json('verifyLink'));
         } catch (ConnectionException $e) {
             return back()->withErrors(['api' => 'เซิร์ฟเวอร์กำลังเริ่มทำงาน กรุณาลองอีกครั้ง']);
