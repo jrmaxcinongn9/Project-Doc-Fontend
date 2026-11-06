@@ -8,7 +8,7 @@
     </h1>
 
     <!-- Profile (โค้ดของคุณ) -->
-    <a href="/teacher/profile" class="flex items-center gap-3 cursor-pointer hover:opacity-80">
+    <a href="/teacher/profile" class="hidden lg:flex items-center gap-3 cursor-pointer hover:opacity-80">
 
         <div class="text-right leading-tight">
             <p class="text-sm font-medium text-gray-700">

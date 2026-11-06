@@ -6,7 +6,7 @@
     <x-teacher-sidebar />
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <!-- Topbar -->
         <x-topbar-profile title="โปรไฟล์ของฉัน" />

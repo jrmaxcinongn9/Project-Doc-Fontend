@@ -17,7 +17,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <x-topbar-profile title="นักศึกษาของฉัน" />
 
@@ -47,9 +47,11 @@
         </div>
         @endif
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-4 sm:p-6 rounded-xl shadow">
 
-            <table class="w-full text-left border-collapse">
+            {{-- บนมือถือเลื่อนตารางซ้ายขวาได้ ไม่ให้ทั้งหน้ากว้างเกินจอ --}}
+            <div class="overflow-x-auto -mx-2 px-2">
+            <table class="stack-on-mobile w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b text-gray-500 text-sm bg-gray-50">
                         <th class="p-3">รหัสนักศึกษา</th>
@@ -86,6 +88,7 @@
                 @endforelse
                 </tbody>
             </table>
+            </div>
 
         </div>
 

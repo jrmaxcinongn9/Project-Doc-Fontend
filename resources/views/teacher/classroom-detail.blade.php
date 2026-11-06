@@ -4,7 +4,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-8 md:p-10 lg:p-12">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
@@ -42,7 +42,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="stack-on-mobile w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-100 text-slate-400 text-sm uppercase tracking-wider bg-white">
                             <th class="p-5 font-semibold">รหัสนักศึกษา</th>

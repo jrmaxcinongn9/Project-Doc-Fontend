@@ -4,7 +4,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-8 md:p-10 lg:p-12">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         {{-- แสดงชื่อ Assignment ที่ส่งมาจาก Controller --}}
         <div class="mb-10">
@@ -45,7 +45,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="stack-on-mobile w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-100 text-slate-400 text-sm uppercase tracking-wider bg-white">
                             <th class="p-5 font-semibold">รหัสนักศึกษา</th>
@@ -158,7 +158,7 @@
              และกรอกคะแนนเต็มตอนสร้างงาน แล้วให้คะแนนทีหลัง --}}
         <div class="bg-white p-6 rounded-xl shadow mt-8">
 
-            <div class="flex items-end justify-between mb-5">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
                 <div>
                     <h3 class="text-lg font-bold text-slate-800">ให้คะแนนและความเห็น</h3>
                     <p class="text-sm text-slate-500 mt-0.5">
@@ -215,7 +215,7 @@
                 @method('PATCH')
 
                 @forelse($gradeRows ?? [] as $row)
-                <div class="grade-row border border-slate-150 rounded-2xl p-4 hover:bg-slate-50/50 transition-colors"
+                <div class="grade-row border border-slate-200 rounded-2xl p-4 hover:bg-slate-50/50 transition-colors"
                      data-student="{{ $row->student_id }}">
 
                     {{-- ค่าเดิม ใช้เทียบว่าแถวไหนถูกแก้ จะได้ส่งเฉพาะแถวนั้น --}}

@@ -16,8 +16,8 @@
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
-    <main class="flex-1 overflow-y-auto">
-        <div class="p-8 md:p-10 max-w-7xl mx-auto w-full">
+    <main class="flex-1 overflow-y-auto min-w-0">
+        <div class="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full">
             
             <div class="flex justify-between items-end mb-8 pb-6 border-b border-slate-200/70">
                 <div>
@@ -74,7 +74,7 @@
             {{-- 📋 TABLE --}}
             <div class="bg-white rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="stack-on-mobile w-full text-left border-collapse">
                         <thead class="bg-slate-50/80 border-b border-slate-100">
                             <tr>
                                 <th class="px-6 py-4 text-[13px] font-bold text-slate-500 uppercase tracking-wider">ข้อมูลผู้ใช้</th>

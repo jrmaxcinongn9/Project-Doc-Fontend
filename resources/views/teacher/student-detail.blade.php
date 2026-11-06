@@ -37,7 +37,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-6 md:p-10 min-w-0">
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-10">
 
         <a href="/teacher/students" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#FA4616] mb-3">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table class="stack-on-mobile w-full text-left text-sm">
                         <thead class="bg-slate-50 text-slate-500">
                             <tr>
                                 <th class="px-6 py-3 font-semibold">งาน</th>

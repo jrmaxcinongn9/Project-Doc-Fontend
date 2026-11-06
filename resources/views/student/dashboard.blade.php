@@ -21,7 +21,7 @@
 
     <x-student-sidebar />
 
-    <main class="flex-1 relative pb-10">
+    <main class="flex-1 relative pb-10 min-w-0">
         
         {{-- 🌟 ส่วน Topbar / Header 🌟 --}}
         <div class="flex justify-between items-start px-6 md:px-10 py-6">
@@ -38,7 +38,7 @@
                 @endif
             </div>
 
-            <a href="{{ url('/student/profile') }}" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
+            <a href="{{ url('/student/profile') }}" class="hidden lg:flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
                 <div class="text-right">
                     <div class="text-sm font-semibold text-[#3f4b5b]">{{ session('user.name') ?? 'นักศึกษา' }}</div>
                     <div class="text-xs text-gray-500">โปรไฟล์</div>
@@ -79,7 +79,54 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- จอเล็กกว่า 1280px (มือถือ iPad และโน้ตบุ๊กจอเล็ก) แสดงเป็นการ์ดทีละงาน
+                 ตารางเดิมกว้างขั้นต่ำ 950px ปุ่มส่งงานจึงหลุดขอบขวาบนมือถือและ iPad --}}
+            <div class="xl:hidden divide-y divide-slate-100">
+                @forelse ($assignmentsList as $a)
+                    @php
+                        $deadline = !empty($a['deadline']) ? \Carbon\Carbon::parse($a['deadline'])->timezone('Asia/Bangkok') : null;
+                        $status = $a['status'] ?? '';
+                        $hasSubmitted = ($a['submitted'] ?? false) || in_array($status, ['Submitted', 'Late Submitted']);
+                        $isLateSubmitted = $status === 'Late Submitted';
+                        $isOverdue = $deadline && $deadline->isPast() && !$hasSubmitted;
+                        [$badgeText, $badgeClass] = match (true) {
+                            $isLateSubmitted => ['ส่งช้า', 'bg-amber-50 text-amber-700 ring-amber-200'],
+                            $hasSubmitted    => ['ส่งแล้ว', 'bg-emerald-50 text-emerald-700 ring-emerald-200'],
+                            $isOverdue       => ['เลยกำหนด', 'bg-rose-50 text-rose-700 ring-rose-200'],
+                            default          => ['ยังไม่ส่ง', 'bg-slate-100 text-slate-600 ring-slate-200'],
+                        };
+                    @endphp
+                    <div class="p-4 sm:p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="font-bold text-slate-800 leading-snug">{{ $a['title'] }}</h3>
+                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset {{ $badgeClass }}">{{ $badgeText }}</span>
+                        </div>
+                        <div class="mt-1 text-sm {{ $isOverdue ? 'text-rose-600' : 'text-slate-500' }}">
+                            @if ($deadline)
+                                กำหนดส่ง {{ $deadline->locale('th')->translatedFormat('j M') }} {{ $deadline->year + 543 }} · {{ $deadline->format('H:i') }}
+                            @else
+                                ไม่มีกำหนดส่ง
+                            @endif
+                        </div>
+                        @if (!empty($a['files']))
+                            <div class="mt-1 text-xs text-slate-400">ส่งแล้ว {{ count($a['files']) }} ไฟล์</div>
+                        @endif
+                        <button type="button"
+                                data-assignment-id="{{ $a['id'] }}"
+                                data-assignment-title="{{ $a['title'] }}"
+                                data-submitted="{{ $hasSubmitted ? 'true' : 'false' }}"
+                                data-files='@json($a['files'] ?? [])'
+                                onclick="openSubmitModal(this.dataset.assignmentId, this.dataset.assignmentTitle, this.dataset.submitted === 'true', this)"
+                                class="mt-3 w-full rounded-xl bg-[#FA4616] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#D83A0D]">
+                            {{ $hasSubmitted ? 'แก้ไขงาน' : 'ส่งงาน' }}
+                        </button>
+                    </div>
+                @empty
+                    <div class="px-6 py-12 text-center text-sm text-slate-500">ยังไม่มีรายการงาน</div>
+                @endforelse
+            </div>
+
+            <div class="hidden xl:block overflow-x-auto">
                 <table class="w-full min-w-[950px] border-collapse text-left">
 
                     <thead class="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-[#7B8189]">
@@ -393,7 +440,7 @@
                                     <svg class="w-6 h-6 text-[#FA4616]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg> 
                                 </div> 
                                 <p class="mb-1 text-sm text-gray-600"><span class="font-semibold text-[#FA4616]">คลิกเพื่อเลือกไฟล์</span> (เลือกได้หลายไฟล์)</p> 
-                                <p class="text-xs text-gray-400 mt-1" id="selectedFileName">แนบไฟล์เพิ่ม (สูงสุด 10MB)</p> 
+                                <p class="text-xs text-gray-400 mt-1" id="selectedFileName">แนบไฟล์เพิ่ม (สูงสุดไฟล์ละ 5 MB)</p> 
                             </div> 
                             <input id="dropzone-file" type="file" name="files[]" multiple class="hidden" onchange="updateFileName(this)" /> 
                         </label> 
@@ -467,7 +514,7 @@
             btnText.innerText = 'ยืนยันการส่งงาน';
         }
 
-        document.getElementById('selectedFileName').innerText = 'แนบไฟล์เพิ่ม (สูงสุด 10MB)';
+        document.getElementById('selectedFileName').innerText = 'แนบไฟล์เพิ่ม (สูงสุดไฟล์ละ 5 MB)';
         fileInput.value = '';
 
         modal.classList.remove('hidden');
@@ -504,7 +551,7 @@
                 textElement.innerHTML = `<span class="text-blue-600 font-semibold">เลือกไฟล์ทั้งหมด ${input.files.length} ไฟล์</span>`;
             }
         } else {
-            textElement.innerText = 'แนบไฟล์เพิ่ม (สูงสุด 10MB)';
+            textElement.innerText = 'แนบไฟล์เพิ่ม (สูงสุดไฟล์ละ 5 MB)';
         }
     }
 

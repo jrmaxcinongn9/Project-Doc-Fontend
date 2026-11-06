@@ -13,6 +13,7 @@
     {{ $slot }}
 
     <x-password-toggle />
+    <x-responsive-tables />
 
 </body>
 </html>

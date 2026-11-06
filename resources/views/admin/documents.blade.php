@@ -4,7 +4,7 @@
 
     <x-admin-sidebar />
 
-    <main class="flex-1 p-6 md:p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <x-admintopbar-profile title="ไฟล์งานทั้งหมดในระบบ" />
 
@@ -51,7 +51,7 @@
 
         <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="stack-on-mobile w-full text-left border-collapse">
                     <thead class="bg-slate-50 border-b border-gray-100">
                         <tr>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ไฟล์</th>

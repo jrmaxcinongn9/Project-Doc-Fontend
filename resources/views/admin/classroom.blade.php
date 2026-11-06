@@ -2,7 +2,7 @@
     <div class="min-h-screen flex bg-slate-50">
         <x-admin-sidebar />
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto min-w-0">
             <div class="p-6 sm:p-10 max-w-7xl mx-auto space-y-6">
                 
                 {{-- Topbar --}}
@@ -45,7 +45,7 @@
                 {{-- Table Card --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <table class="stack-on-mobile w-full text-left border-collapse whitespace-nowrap">
                             {{-- HEADER --}}
                             <thead class="bg-slate-50/80 border-b border-slate-100">
                                 <tr>

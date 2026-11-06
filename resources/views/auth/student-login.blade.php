@@ -26,12 +26,12 @@
     </div>
 
     <!-- 🔝 NAVBAR -->
-    <div class="relative z-10 flex justify-between items-center px-10 py-6">
+    <div class="relative z-10 flex justify-between items-center gap-3 px-4 sm:px-10 py-4 sm:py-6">
 
         <a href="/" class="flex items-center gap-3">
             <img src="{{ asset('images/logoo.png') }}" 
-                 class="h-14 drop-shadow-lg">
-            <span class="text-lg font-semibold tracking-wide text-white/80">
+                 class="h-10 sm:h-14 drop-shadow-lg">
+            <span class="hidden sm:inline text-lg font-semibold tracking-wide text-white/80">
                 INTERNSHIP SYSTEM
             </span>
         </a>
@@ -40,7 +40,7 @@
 
             {{-- เดิมเรียก openSupport() ซึ่งไม่มีอยู่จริง กดแล้วไม่เกิดอะไร --}}
             <a href="/support"
-                class="px-5 py-2 rounded-xl text-white/80
+                class="whitespace-nowrap px-3 sm:px-5 py-2 text-sm sm:text-base rounded-xl text-white/80
                        border border-white/10 
                        bg-white/5 backdrop-blur-xl
                        hover:bg-white/10 hover:text-white
@@ -51,7 +51,7 @@
             {{-- ปุ่มขอบบาง ไม่ใช่ส้มทึบ ให้ปุ่ม Login ในการ์ดเด่นที่สุดปุ่มเดียว
                  คนที่ยังไม่มีบัญชีมีลิงก์สมัครใต้ปุ่ม Login อีกทาง --}}
             <a href="/register"
-               class="px-5 py-2 rounded-xl text-[#F8A04D] font-semibold
+               class="whitespace-nowrap px-3 sm:px-5 py-2 text-sm sm:text-base rounded-xl text-[#F8A04D] font-semibold
                       border border-[#F58220]/70 bg-transparent
                       hover:bg-[#F58220]/10 hover:text-[#FDBA74]
                       transition-all">

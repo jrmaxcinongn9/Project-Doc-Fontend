@@ -1,4 +1,16 @@
-<aside class="w-64 bg-white border-r border-slate-200 h-screen flex flex-col sticky top-0">
+<x-mobile-nav profile="/student/profile" title="ห้องเรียนของฉัน" />
+
+{{-- จอใหญ่: เมนูติดด้านซ้ายเหมือนเดิม จอเล็ก: ซ่อนไว้ทางซ้าย กด ☰ แล้วเลื่อนออกมา --}}
+<aside id="appSidebar"
+       class="w-64 shrink-0 bg-white border-r border-slate-200 h-screen flex flex-col
+              fixed inset-y-0 left-0 z-50 -translate-x-full transition-transform duration-200
+              lg:sticky lg:top-0 lg:z-auto lg:translate-x-0">
+    {{-- ปิดเมนูบนจอเล็ก --}}
+    <button type="button" data-sidebar-close aria-label="ปิดเมนู"
+            class="lg:hidden absolute top-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
     
     <div class="pt-8 pb-6 px-6 border-b border-slate-100 flex justify-center items-center">
         <a href="/" class="block transition-transform hover:scale-105 duration-300">

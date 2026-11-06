@@ -4,7 +4,7 @@
 
     <x-admin-sidebar />
 
-    <main class="flex-1 p-8">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <h1 class="text-2xl font-bold text-gray-800 mb-6">
             📄 {{ $assignment['assignment_name'] }}

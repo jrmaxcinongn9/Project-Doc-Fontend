@@ -4,7 +4,7 @@
 
     <x-teacher-sidebar />
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <x-topbar-profile title="ภาพรวมงาน" />
 
@@ -45,7 +45,7 @@
         {{-- รายงานต่อชิ้นงาน ตามที่อาจารย์ขอ --}}
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="stack-on-mobile w-full text-left border-collapse">
                     <thead class="bg-slate-50/80 border-b border-slate-100">
                         <tr>
                             <th class="px-6 py-4 text-[13px] font-bold text-slate-500 uppercase tracking-wider">งาน</th>

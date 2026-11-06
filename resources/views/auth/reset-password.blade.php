@@ -13,10 +13,10 @@
         </div>
     </div>
 
-    <div class="relative z-10 flex justify-between items-center px-10 py-6">
+    <div class="relative z-10 flex justify-between items-center gap-3 px-4 sm:px-10 py-4 sm:py-6">
         <a href="/" class="flex items-center gap-3 group">
-            <img src="{{ asset('images/logoo.png') }}" class="h-14 drop-shadow-lg group-hover:scale-105 transition-transform">
-            <span class="text-lg font-semibold tracking-wide text-white/80">KMUTT SYSTEM</span>
+            <img src="{{ asset('images/logoo.png') }}" class="h-10 sm:h-14 drop-shadow-lg group-hover:scale-105 transition-transform">
+            <span class="hidden sm:inline text-lg font-semibold tracking-wide text-white/80">KMUTT SYSTEM</span>
         </a>
     </div>
 

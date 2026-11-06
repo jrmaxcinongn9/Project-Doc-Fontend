@@ -7,7 +7,7 @@
 
         <x-admin-sidebar />
 
-        <main class="flex-1 p-6 md:p-10"> {{-- เพิ่ม Responsive Padding --}}
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0"> {{-- เพิ่ม Responsive Padding --}}
 
             <x-admintopbar-profile title="โปรไฟล์ผู้ดูแลระบบ" />
 
@@ -18,7 +18,7 @@
                     {{-- แถบสีส้มด้านบนเพิ่มความโดดเด่น --}}
                     <div class="h-2 bg-[#F58220]"></div>
 
-                    <div class="p-8 md:p-10">
+                    <div class="p-5 sm:p-8 md:p-10">
                         <div class="flex flex-col sm:flex-row items-center gap-6 border-b border-slate-100 pb-8 mb-8">
                             
                             {{-- Profile Image Container --}}

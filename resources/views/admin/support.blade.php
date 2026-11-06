@@ -3,8 +3,8 @@
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
-    <main class="flex-1 overflow-y-auto">
-        <div class="p-8 md:p-10 max-w-5xl mx-auto w-full">
+    <main class="flex-1 overflow-y-auto min-w-0">
+        <div class="p-4 sm:p-6 lg:p-10 max-w-5xl mx-auto w-full">
 
             <div class="flex justify-between items-end mb-6 pb-6 border-b border-slate-200/70">
                 <div>

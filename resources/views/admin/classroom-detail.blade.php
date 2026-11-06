@@ -13,7 +13,7 @@
         {{-- MAIN CONTENT --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
             
-            <main class="flex-1 overflow-y-auto p-6">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 min-w-0">
                 <div class="max-w-7xl mx-auto">
 
                     {{-- HEADER --}}
@@ -40,7 +40,7 @@
                                     <span class="text-sm font-semibold text-gray-400">{{ count($classroom->students) }} รายการ</span>
                                 </div>
                                 <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
+                                    <table class="stack-on-mobile w-full text-left border-collapse">
                                         <thead>
                                             <tr class="bg-gray-50 text-gray-500 text-[11px] uppercase tracking-widest font-bold">
                                                 <th class="px-6 py-4">#</th>

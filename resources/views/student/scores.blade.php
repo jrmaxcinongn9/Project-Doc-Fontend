@@ -4,7 +4,7 @@
 
     <x-student-sidebar />
 
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
 
         <x-student-topbar-profile title="คะแนนและความเห็น" />
 

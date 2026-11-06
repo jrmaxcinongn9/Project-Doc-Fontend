@@ -19,18 +19,18 @@
         </div>
     </div>
 
-    <div class="relative z-10 flex justify-between items-center px-10 py-6">
+    <div class="relative z-10 flex justify-between items-center gap-3 px-4 sm:px-10 py-4 sm:py-6">
         <a href="/" class="flex items-center gap-3 group">
             <img src="{{ asset('images/logoo.png') }}" 
-                 class="h-14 drop-shadow-lg group-hover:scale-105 transition-transform">
-            <span class="text-lg font-semibold tracking-wide text-white/80">
+                 class="h-10 sm:h-14 drop-shadow-lg group-hover:scale-105 transition-transform">
+            <span class="hidden sm:inline text-lg font-semibold tracking-wide text-white/80">
                 INTERNSHIP SYSTEM
             </span>
         </a>
 
         <div class="flex items-center gap-3">
             <a href="/login/student"
-               class="px-5 py-2 rounded-xl text-white/80
+               class="whitespace-nowrap px-3 sm:px-5 py-2 text-sm sm:text-base rounded-xl text-white/80
                       border border-white/10 bg-white/5 backdrop-blur-xl
                       hover:bg-white/10 hover:text-white transition-all">
                 Back to Login

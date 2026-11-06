@@ -5,7 +5,7 @@
 <div class="min-h-screen flex bg-[#f9fafb]">
     <x-student-sidebar />
 
-    <main class="flex-1 relative pb-10">
+    <main class="flex-1 relative pb-10 min-w-0">
 
         <div class="flex justify-between items-start px-6 md:px-10 py-6">
             <div>
@@ -13,7 +13,7 @@
                 <p class="text-sm text-slate-500 mt-1">เลือกห้องเพื่อดูงานและส่งงาน</p>
             </div>
 
-            <a href="{{ url('/student/profile') }}" class="flex items-center gap-3 hover:opacity-80 transition">
+            <a href="{{ url('/student/profile') }}" class="hidden lg:flex items-center gap-3 hover:opacity-80 transition">
                 <div class="text-right">
                     <div class="text-sm font-semibold text-[#3f4b5b]">{{ session('user.name') ?? 'นักศึกษา' }}</div>
                     <div class="text-xs text-gray-500">โปรไฟล์</div>

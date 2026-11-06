@@ -6,7 +6,7 @@
         {{ $title ?? '' }}
     </h1>
 
-    <a href="{{ url('/student/profile') }}" class="flex items-center gap-3 cursor-pointer text-right hover:opacity-80 transition">
+    <a href="{{ url('/student/profile') }}" class="hidden lg:flex items-center gap-3 cursor-pointer text-right hover:opacity-80 transition">
 
         <div class="text-right">
             <p class="text-sm font-medium text-gray-700">

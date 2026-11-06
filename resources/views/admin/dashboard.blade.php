@@ -2,7 +2,7 @@
 <div class="min-h-screen flex bg-slate-50">
     <x-admin-sidebar />
 
-    <main class="flex-1 p-8 md:p-10">
+    <main class="flex-1 p-4 sm:p-6 lg:p-10 min-w-0">
         <div class="max-w-7xl mx-auto w-full">
             
             <div class="flex justify-between items-end mb-10 pb-6 border-b border-slate-200/70">
@@ -58,11 +58,11 @@
             </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-6">
                 @foreach($displayCards as $card)
                     <div class="group bg-white rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-1 h-full cursor-default">
                         
-                        <div class="p-6 pb-2 flex justify-between items-start">
+                        <div class="p-4 sm:p-6 pb-2 flex justify-between items-start">
                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" 
                                  style="background-color: {{ $card['bg'] }}; color: {{ $card['color'] }}; box-shadow: 0 4px 12px {{ $card['color'] }}20;">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
@@ -75,8 +75,8 @@
                                  ตัวเลขที่อ่านแล้วเชื่อไม่ได้ แย่กว่าไม่มีตัวเลข --}}
                         </div>
 
-                        <div class="p-6 pt-4 pb-0 z-10">
-                            <h3 class="text-[32px] md:text-[40px] font-black text-slate-800 tracking-tight leading-none mb-1">
+                        <div class="p-4 sm:p-6 pt-3 sm:pt-4 pb-0 z-10">
+                            <h3 class="text-[26px] sm:text-[32px] md:text-[40px] font-black text-slate-800 tracking-tight leading-none mb-1">
                                 {{ number_format($card['value']) }}
                             </h3>
                             <p class="text-slate-400 text-sm font-medium">{{ $card['label'] }}</p>
@@ -108,7 +108,7 @@
 
                 <div class="bg-white rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="stack-on-mobile w-full text-left border-collapse">
                             <thead class="bg-slate-50/80 border-b border-slate-100">
                                 <tr>
                                     <th class="px-6 py-4 text-[13px] font-bold text-slate-500 uppercase tracking-wider">สาขา</th>
